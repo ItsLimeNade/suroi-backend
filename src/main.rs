@@ -1,8 +1,8 @@
+mod typings;
 mod utils;
+mod constants;
 
-use utils::vectors::Vec2D;
-use utils::random::weighted_random;
-
+use utils::random;
 fn main() {
     // let vec: Vec2D = Vec2D::new(30.0, 50.0);
 
@@ -11,6 +11,6 @@ fn main() {
     let items = vec!["a", "b"];
     let weights = vec![1.0,9.0];
 
-    println!("{:#?}", weighted_random(&items, &weights));
+    println!("{:#?}", random::weighted_random(&items, &weights));
 }
 
