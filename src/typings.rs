@@ -1,8 +1,26 @@
+use std::ops::Add;
+
 #[rustfmt::skip] // These two skips are to prevent rustfmt from
                  // wrapping these enums onto separate lines.
+#[derive(Copy, Clone)]
 pub enum Orientation { Up, Right, Down, Left }
+impl Add for Orientation {
+    type Output = Orientation;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        let added = self as u8 + rhs as u8 % 4;
+        match added {
+            0 => Orientation::Up,
+            1 => Orientation::Right,
+            2 => Orientation::Down,
+            3 => Orientation::Left,
+            _ => Orientation::Up,
+        }
+    }
+}
 
 #[rustfmt::skip]
+#[derive(Copy, Clone)]
 pub enum Variant { A, B, C, D, E, F, G, H }
 
 pub enum GameRejectType {

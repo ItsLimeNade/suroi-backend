@@ -1,7 +1,7 @@
 #[derive(Debug)]
 pub struct Vec2D {
-    x: f32,
-    y: f32
+    pub x: f32,
+    pub y: f32
 }
 
 impl Vec2D {
