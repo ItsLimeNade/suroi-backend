@@ -1,6 +1,6 @@
 use rand::prelude::*;
 
-pub fn weighted_random<'a, T>(items: &'a [T], weights: &'a Vec<f64>) -> &'a T {
+pub fn weighted_random<'a, T>(items: &'a [T], weights: &Vec<f64>) -> &'a T {
     let mut i: usize = 0;
     let mut pick: f64 = rand::thread_rng().gen::<f64>() * weights.iter().sum::<f64>();
     

@@ -1,7 +1,50 @@
+use std::ops::{Add, Mul, Sub, Neg};
+
 #[derive(Debug)]
 pub struct Vec2D {
     x: f32,
     y: f32
+}
+
+impl Add for Vec2D {
+    type Output = Vec2D;
+
+    fn add(self, other: Vec2D) -> Vec2D {
+        Vec2D {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
+
+impl Sub for Vec2D {
+    type Output = Vec2D;
+
+    fn sub(self, other: Vec2D) -> Vec2D {
+        Vec2D {
+            x: self.x - other.x,
+            y: self.y - other.y,
+        }
+    }
+}
+
+impl Mul for Vec2D {
+    type Output = f32;
+
+    fn mul(self, other: Vec2D) -> f32 {
+        self.x * other.x + self.y * other.y
+    }
+}
+
+impl Neg for Vec2D {
+    type Output = Vec2D;
+
+    fn neg(self) -> Vec2D {
+        Vec2D {
+            x: -self.x,
+            y: -self.y
+        }
+    }
 }
 
 impl Vec2D {
@@ -54,11 +97,25 @@ impl Vec2D {
     }
 
     pub fn length(vector: &Vec2D) -> f32 {
-        f32::sqrt(vector.squared_length(vector))
+        f32::sqrt(Vec2D::squared_length(vector))
+    }
+
+    pub fn dot_product(vec1: &Vec2D, vec2: &Vec2D) -> f32 {
+        vec1.x * vec2.x + vec1.y * vec2.y
+    }
+
+    pub fn direction(vector: &Vec2D) -> f32 {
+        f32::atan2(vector.y, vector.x)
+    }
+
+    pub fn invert(vector: &Vec2D) -> Vec2D {
+        Vec2D {
+            x: -vector.x,
+            y: -vector.y
+        }
+    }
+
+    pub fn ang_vec(vec1: &Vec2D, vec2: &Vec2D)  {
+        print!("lol")
     }
 }
-
-
-
-
-
