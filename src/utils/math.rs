@@ -58,7 +58,7 @@ pub mod angle {
     /// - `b`: The second point, used as the tail of the vector
     /// ## Returns
     /// The angle, in radians, of the line going from b to a
-    pub fn between_points(a: &Vec2D, b: &Vec2D) -> f32 {
+    pub fn between_points(a: &Vec2D, b: &Vec2D) -> f64 {
         (a.y - b.y).atan2(a.x - b.x)
     }
     /// Normalize an angle to between -π and π
@@ -82,7 +82,7 @@ pub mod angle {
 }
 
 pub mod Geometry {
-    
+
 }
 
 pub mod Collision {
