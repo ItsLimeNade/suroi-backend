@@ -1,11 +1,7 @@
 use rand::prelude::*;
 use rand::distributions::uniform::SampleUniform;
 use std::f64::consts::PI;
-
-
 use crate::utils::vectors::Vec2D;
-
-use super::math::angle;
 
 pub fn weighted_random<'a, T>(items: &'a [T], weights: &Vec<f64>) -> &'a T {
     let mut i: usize = 0;
