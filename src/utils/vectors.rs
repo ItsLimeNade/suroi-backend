@@ -114,7 +114,7 @@ impl Vec2D {
         f64::sqrt(Vec2D::squared_length(vector))
     }
 
-    pub fn dot_product(vec1: Vec2D, vec2: Vec2D) -> f64 {
+    pub fn dot(vec1: Vec2D, vec2: Vec2D) -> f64 {
         vec1.x * vec2.x + vec1.y * vec2.y
     }
 
@@ -138,14 +138,11 @@ impl Vec2D {
     }
 
     pub fn project(vec1: Vec2D, vec2: Vec2D) -> Self {
-        Vec2D::scale(vec2, Vec2D::dot_product(vec1, vec2) / Vec2D::squared_length(vec2))
+        Vec2D::scale(vec2, Vec2D::dot(vec1, vec2) / Vec2D::squared_length(vec2))
     }
 
     pub fn normalize(vector: Vec2D, fallback: Option<Vec2D>) -> Self {
-        let fallback: Vec2D = match fallback {
-            Some(thing) => thing.clone(),
-            None => Vec2D::new(1.0, 0.0),
-        };
+        let fallback: Vec2D = fallback.unwrap_or(Vec2D::new(1.0, 0.0));
         let len = Vec2D::length(vector);
 
         if len > f64::from(0.000001) {
@@ -159,18 +156,12 @@ impl Vec2D {
     }
 
     pub fn equals(vec1: Vec2D, vec2: Vec2D, epsilon: Option<f64>) -> bool {
-        let epsilon: f64 = match epsilon {
-            Some(eps) => eps.clone(),
-            None => f64::from(0.001),
-        };
+        let epsilon: f64 = epsilon.unwrap_or(0.001);
         f64::abs(vec1.x - vec2.x) <= epsilon && f64::abs(vec1.y - vec2.y) <=epsilon
     }
 
     pub fn from_polar(angle: f64, magnitude: Option<f64>) -> Self {
-        let magnitude: f64 = match magnitude {
-            Some(mag) => mag.clone(),
-            None => f64::from(1.0),
-        };
+        let magnitude: f64 = magnitude.unwrap_or(1.0);
         Vec2D {
             x: f64::cos(angle) * magnitude,
             y: f64::sin(angle) * magnitude

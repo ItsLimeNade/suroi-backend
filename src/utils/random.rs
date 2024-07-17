@@ -33,10 +33,7 @@ pub fn random<T: SampleUniform + Ord + Copy>(min: T, max: T) {
 }
 
 pub fn rand_bool(probability: Option<f64>) -> bool {
-    let probability = match probability {
-        None => f64::from(0.5),
-        Some(prob) => prob,
-    };
+    let probability = probability.unwrap_or(0.5);
     rand::thread_rng().gen_bool(probability)
 }
 
