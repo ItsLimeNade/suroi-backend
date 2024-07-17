@@ -1,18 +1,25 @@
 use std::ops::{Add, Mul, Sub, Neg, MulAssign};
+use std::cmp::PartialEq;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Copy)]
 pub struct Vec2D {
     pub x: f64,
     pub y: f64
 }
 
+impl PartialEq for Vec2D {
+    fn eq(&self, other: &Self) -> bool {
+        self.x == other.x && self.y == other.y
+    }
+}
+
 impl Add for Vec2D {
     type Output = Vec2D;
 
-    fn add(self, other: Vec2D) -> Vec2D {
+    fn add(self, rhs: Self) -> Self::Output {
         Vec2D {
-            x: self.x + other.x,
-            y: self.y + other.y,
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
         }
     }
 }
@@ -62,35 +69,35 @@ impl Vec2D {
         }
     }
 
-    pub fn add(vector1: &Vec2D, vector2: &Vec2D) -> Self {
+    pub fn add(vector1: Vec2D, vector2: Vec2D) -> Self {
         Vec2D {
-            x: &vector1.x + &vector2.x,
-            y: &vector1.y + &vector2.y
+            x: vector1.x + vector2.x,
+            y: vector1.y + vector2.y
         }
     }
 
-    pub fn sub(vector1: &Vec2D, vector2: &Vec2D) -> Self {
+    pub fn sub(vector1: Vec2D, vector2: Vec2D) -> Self {
         Vec2D {
-            x: &vector1.x - &vector2.x,
-            y: &vector1.y - &vector2.y
+            x: vector1.x - vector2.x,
+            y: vector1.y - vector2.y
         }
     }
 
-    pub fn scale(&self, amplifier: f64) -> Self {
+    pub fn scale(self, amplifier: f64) -> Self {
         Vec2D {
-            x: &self.x * amplifier,
-            y: &self.y * amplifier
+            x: self.x * amplifier,
+            y: self.y * amplifier
         }
     }
 
-    pub fn clone(&self) -> Self {
+    pub fn clone(self) -> Self {
         Vec2D {
             x: self.x,
             y: self.y
         }
     }
 
-    pub fn rotate(vector: &Vec2D, angle: f64) -> Self {
+    pub fn rotate(vector: Vec2D, angle: f64) -> Self {
         let cos: f64 = f64::cos(angle);
         let sin: f64 = f64::sin(angle);
         Vec2D {
@@ -99,42 +106,42 @@ impl Vec2D {
         }
     }
 
-    pub fn squared_length(vector: &Vec2D) -> f64 {
+    pub fn squared_length(vector: Vec2D) -> f64 {
         vector.x * vector.x + vector.y * vector.y
     }
 
-    pub fn length(vector: &Vec2D) -> f64 {
+    pub fn length(vector: Vec2D) -> f64 {
         f64::sqrt(Vec2D::squared_length(vector))
     }
 
-    pub fn dot_product(vec1: &Vec2D, vec2: &Vec2D) -> f64 {
+    pub fn dot_product(vec1: Vec2D, vec2: Vec2D) -> f64 {
         vec1.x * vec2.x + vec1.y * vec2.y
     }
 
-    pub fn direction(vector: &Vec2D) -> f64 {
+    pub fn direction(vector: Vec2D) -> f64 {
         f64::atan2(vector.y, vector.x)
     }
 
-    pub fn invert(vector: &Vec2D) -> Vec2D {
+    pub fn invert(vector: Vec2D) -> Vec2D {
         Vec2D {
             x: -vector.x,
             y: -vector.y
         }
     }
 
-    pub fn angle(vec1: &Vec2D, vec2: &Vec2D) -> f64  {
+    pub fn angle(vec1: Vec2D, vec2: Vec2D) -> f64  {
         f64::acos((vec1.x * vec2.x + vec1.y * vec2.y) / f64::sqrt(Vec2D::length(vec1) * Vec2D::length(vec2)))
     }
 
-    pub fn lerp(start: &Vec2D, end: &Vec2D, interp_factor: &f64) -> Self {
-        Vec2D::scale(start, 1.0 - interp_factor) + Vec2D::scale(end, *interp_factor)
+    pub fn lerp(start: Vec2D, end: Vec2D, interp_factor: f64) -> Self {
+        Vec2D::scale(start, 1.0 - interp_factor) + Vec2D::scale(end, interp_factor)
     }
 
-    pub fn project(vec1: &Vec2D, vec2: &Vec2D) -> Self {
+    pub fn project(vec1: Vec2D, vec2: Vec2D) -> Self {
         Vec2D::scale(vec2, Vec2D::dot_product(vec1, vec2) / Vec2D::squared_length(vec2))
     }
 
-    pub fn normalize(vector: &Vec2D, fallback: &Option<Vec2D>) -> Self {
+    pub fn normalize(vector: Vec2D, fallback: Option<Vec2D>) -> Self {
         let fallback: Vec2D = match fallback {
             Some(thing) => thing.clone(),
             None => Vec2D::new(1.0, 0.0),
@@ -151,7 +158,7 @@ impl Vec2D {
         }
     }
 
-    pub fn equals(vec1: &Vec2D, vec2: &Vec2D, epsilon: &Option<f64>) -> bool {
+    pub fn equals(vec1: Vec2D, vec2: Vec2D, epsilon: Option<f64>) -> bool {
         let epsilon: f64 = match epsilon {
             Some(eps) => eps.clone(),
             None => f64::from(0.001),
@@ -159,14 +166,14 @@ impl Vec2D {
         f64::abs(vec1.x - vec2.x) <= epsilon && f64::abs(vec1.y - vec2.y) <=epsilon
     }
 
-    pub fn from_polar(angle: &f64, magnitude: &Option<f64>) -> Self {
+    pub fn from_polar(angle: f64, magnitude: Option<f64>) -> Self {
         let magnitude: f64 = match magnitude {
             Some(mag) => mag.clone(),
             None => f64::from(1.0),
         };
         Vec2D {
-            x: f64::cos(*angle) * magnitude,
-            y: f64::sin(*angle) * magnitude
+            x: f64::cos(angle) * magnitude,
+            y: f64::sin(angle) * magnitude
         }
     }
 }
