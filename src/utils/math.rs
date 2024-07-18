@@ -2,18 +2,18 @@ pub use std::f32::consts::{FRAC_PI_2 as HALF_PI, PI, TAU};
 use super::vectors::Vec2D;
 
 pub struct CollisionRecord {
-    collided: bool,
-    distance: f64
+    pub collided: bool,
+    pub distance: f64
 }
 
 pub struct CollisionResponse {
-    dir: Vec2D,
-    pen: f64
+    pub dir: Vec2D,
+    pub pen: f64
 }
 
 pub struct IntersectionResponse {
-    point: Vec2D,
-    normal: Vec2D
+    pub point: Vec2D,
+    pub normal: Vec2D
 }
 
 pub mod numeric {
@@ -97,7 +97,7 @@ pub mod angle {
     }
 }
 
-pub mod Geometry {
+pub mod geometry {
     use super::Vec2D;
 
     pub struct Circle {
@@ -107,7 +107,7 @@ pub mod Geometry {
 
 }
 
-pub mod Collision {
+pub mod collision {
     use super::Vec2D;
     use super::CollisionResponse;
 

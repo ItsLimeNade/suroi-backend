@@ -1,6 +1,6 @@
 use crate::typings::Orientation;
 use super::vectors::Vec2D;
-use super::math::{CollisionRecord, CollisionResponse, IntersectionResponse};
+use super::math::{collision, CollisionRecord, CollisionResponse, IntersectionResponse};
 
 #[derive(Debug)]
 pub enum Hitbox {
@@ -32,7 +32,13 @@ pub struct CircleHitbox {
 impl Collidable for CircleHitbox {
     fn resolve_collision(&mut self, other: &Hitbox) {
         match other {
-            Hitbox::Circle(other) => {}
+            Hitbox::Circle(other) => {
+                let col = collision::circle_circle_intersection(self.position, self.radius, other.position, other.radius);
+                match col {
+                    Some(collision) => self.position = self.position - Vec2D::scale(collision.dir, collision.pen),
+                    None => ()
+                }
+            }
         }
     }
 }
