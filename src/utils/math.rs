@@ -1,4 +1,20 @@
 pub use std::f32::consts::{FRAC_PI_2 as HALF_PI, PI, TAU};
+use super::vectors::Vec2D;
+
+pub struct CollisionRecord {
+    collided: bool,
+    distance: f64
+}
+
+pub struct CollisionResponse {
+    dir: Vec2D,
+    pen: f64
+}
+
+pub struct IntersectionResponse {
+    point: Vec2D,
+    normal: Vec2D
+}
 
 pub mod numeric {
     /// Works like regular modulo, but negative numbers cycle back around: hence,
@@ -82,9 +98,31 @@ pub mod angle {
 }
 
 pub mod Geometry {
+    use super::Vec2D;
+
+    pub struct Circle {
+        pub center: Vec2D,
+        pub radius: f64
+    }
 
 }
 
 pub mod Collision {
+    use super::Vec2D;
+    use super::CollisionResponse;
 
+    pub fn circle_circle_intersection(center_a: Vec2D, radius_a: f64, center_b: Vec2D, radius_b: f64) -> Option<CollisionResponse> {
+        let radius = radius_a + radius_b;
+        let p1 = center_b - center_a;
+        let dist_sqr = Vec2D::squared_length(p1);
+
+        if dist_sqr < radius * radius {
+            Some(CollisionResponse {
+                dir: Vec2D::normalize(p1, None),
+                pen: radius - f64::sqrt(dist_sqr)
+            })
+        } else {
+            None
+        }
+    }
 }
