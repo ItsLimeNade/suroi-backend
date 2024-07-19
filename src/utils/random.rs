@@ -3,6 +3,15 @@ use rand::distributions::uniform::SampleUniform;
 use std::f64::consts::PI;
 use crate::utils::vectors::Vec2D;
 
+/// Returns a randomly selected item from the given slice of items based on the provided weights.
+///
+/// # Arguments
+/// * `items` - A reference to a slice of items of type T.
+/// * `weights` - A reference to a vector of f64 weights corresponding to each item in the slice.
+///
+/// # Returns
+/// A reference to the selected item from the slice.
+///
 pub fn weighted_random<'a, T>(items: &'a [T], weights: &Vec<f64>) -> &'a T {
     let mut i: usize = 0;
     let mut pick: f64 = rand::thread_rng().gen::<f64>() * weights.iter().sum::<f64>();

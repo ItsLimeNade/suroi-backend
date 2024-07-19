@@ -111,6 +111,14 @@ pub mod collision {
     use super::Vec2D;
     use super::CollisionResponse;
 
+    /// Calculate the intersection between two circles
+    /// ## Parameters
+    /// - `center_a`: Center of the first circle
+    /// - `radius_a`: Radius of the first circle
+    /// - `center_b`: Center of the second circle
+    /// - `radius_b`: Radius of the second circle
+    /// ## Returns
+    /// An `Option` containing a `CollisionResponse` if the circles intersect, otherwise `None`
     pub fn circle_circle_intersection(center_a: Vec2D, radius_a: f64, center_b: Vec2D, radius_b: f64) -> Option<CollisionResponse> {
         let radius = radius_a + radius_b;
         let p1 = center_b - center_a;
@@ -125,4 +133,26 @@ pub mod collision {
             None
         }
     }
+
+    /// Check for collision between two circles.
+    ///
+    /// Determines if two circles defined by their centers and radii collide with each other.
+    ///
+    /// ## Parameters
+    /// - `center_a`: The center of the first circle
+    /// - `radius_a`: The radius of the first circle
+    /// - `center_b`: The center of the second circle
+    /// - `radius_b`: The radius of the second circle
+    ///
+    /// ## Returns
+    /// Returns `true` if the circles collide, `false` otherwise.
+    pub fn circle_collision(center_a: Vec2D, radius_a: f64, center_b: Vec2D, radius_b: f64) -> bool {
+        let rad_sum = radius_a + radius_b;
+        let center_x = center_a.x - center_b.x;
+        let center_y = center_a.y - center_b.y;
+
+        rad_sum * rad_sum > center_x * center_x + center_y * center_y
+    }
+
+    pub fn rectangle_collision(min: Vec2D, max: Vec2D)
 }

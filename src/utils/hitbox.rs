@@ -6,12 +6,12 @@ use super::math::{collision, CollisionRecord, CollisionResponse, IntersectionRes
 pub enum Hitbox {
     Circle(CircleHitbox),
     Rect(RectangleHitbox),
-    Group, // Not implemented
-    Polygon // Not implemented
+    Group(GroupHitbox),
+    Polygon(PolygonHitbox)
 }
 
 pub trait Collidable {
-    fn collides_with(&self, other: &Self) -> bool;
+    fn collides_with(&self, other: &Hitbox) -> bool;
     fn resolve_collision(&mut self, other: &Hitbox);
     fn distance_to(&self, other: &Self) -> f64;
     fn transform(&self, pos: Vec2D, scale: f64, orientation: Orientation) -> Hitbox;
@@ -30,14 +30,39 @@ pub struct CircleHitbox {
 }
 
 impl Collidable for CircleHitbox {
+    fn collides_with(&self, other: &Hitbox) -> bool {
+        match other {
+            Hitbox::Circle(other) => {
+                collision::circle_collision(other.position, other.radius, self.position, self.radius)
+            },
+            Hitbox::Rect(other) => {
+
+            },
+            Hitbox::Group(other) => {
+
+            },
+            Hitbox::Polygon(other) => {
+
+            }
+        }
+    }
     fn resolve_collision(&mut self, other: &Hitbox) {
         match other {
             Hitbox::Circle(other) => {
                 let col = collision::circle_circle_intersection(self.position, self.radius, other.position, other.radius);
                 match col {
                     Some(collision) => self.position = self.position - Vec2D::scale(collision.dir, collision.pen),
-                    None => ()
+                    _ => ()
                 }
+            },
+            Hitbox::Rect(other) => {
+
+            },
+            Hitbox::Group(other) => {
+
+            },
+            Hitbox::Polygon(other) => {
+
             }
         }
     }
@@ -47,4 +72,14 @@ impl Collidable for CircleHitbox {
 pub struct RectangleHitbox {
     min: Vec2D,
     max: Vec2D,
+}
+
+#[derive(Debug, Clone)]
+pub struct PolygonHitbox {
+
+}
+
+#[derive(Debug, Clone)]
+pub struct GroupHitbox {
+
 }
