@@ -1,4 +1,4 @@
-pub use std::f32::consts::{FRAC_PI_2 as HALF_PI, PI, TAU};
+pub use std::f64::consts::{FRAC_PI_2 as HALF_PI, PI, TAU};
 use super::vectors::Vec2D;
 
 pub struct CollisionRecord {
@@ -22,7 +22,7 @@ pub mod numeric {
     /// ## Parameters
     /// - `a`: The dividend
     /// - `n`: The divisor
-    pub fn abs_mod(a: f32, n: f32) -> f32 {
+    pub fn abs_mod(a: f64, n: f64) -> f64 {
         if a >= 0.0 {
             a % n
         } else {
@@ -37,7 +37,7 @@ pub mod numeric {
     /// ## Returns
     /// A number corresponding to the linear interpolation
     /// between `a` and `b` at factor `interpFactor`
-    pub fn lerp(start: f32, end: f32, interp_factor: f32) -> f32 {
+    pub fn lerp(start: f64, end: f64, interp_factor: f64) -> f64 {
         return start * (1.0 - interp_factor) + end * interp_factor;
     }
     /// Limit a number to given bounds
@@ -45,7 +45,7 @@ pub mod numeric {
     /// - `value`: Number to limit
     /// - `min`: Lower bound
     /// - `max`: Upper bound
-    pub fn clamp(value: f32, min: f32, max: f32) -> f32 {
+    pub fn clamp(value: f64, min: f64, max: f64) -> f64 {
         if value < max {
             if value > min {
                 return value;
@@ -56,7 +56,7 @@ pub mod numeric {
     }
     /// Uses linear interpolation in each range to
     /// remap a number from one range to another.
-    pub fn remap(value: f32, min0: f32, max0: f32, min1: f32, max1: f32) -> f32 {
+    pub fn remap(value: f64, min0: f64, max0: f64, min1: f64, max1: f64) -> f64 {
         self::lerp(
             min1,
             max1,
@@ -80,19 +80,19 @@ pub mod angle {
     /// Normalize an angle to between -π and π
     /// ## Parameters
     /// - `radians`: The angle, in radians
-    pub fn normalize(radians: f32) -> f32 {
+    pub fn normalize(radians: f64) -> f64 {
         numeric::abs_mod(radians - PI, TAU) - PI
     }
     /// Find the smallest difference between two angles (in radians)
-    pub fn minimize(start: f32, end: f32) -> f32 {
+    pub fn minimize(start: f64, end: f64) -> f64 {
         numeric::abs_mod(end - start + PI, TAU) - PI
     }
     /// Degrees to radians
-    pub fn degToRad(degrees: f32) -> f32 {
+    pub fn degToRad(degrees: f64) -> f64 {
         degrees * PI / 180.0
     }
     /// Radians to degrees
-    pub fn radToDeg(radians: f32) -> f32 {
+    pub fn radToDeg(radians: f64) -> f64 {
         radians / PI * 180.0
     }
 }
@@ -107,7 +107,8 @@ pub mod geometry {
 
 }
 
-pub mod collision {
+
+pub mod intersections {
     use super::Vec2D;
     use super::CollisionResponse;
 
@@ -119,7 +120,7 @@ pub mod collision {
     /// - `radius_b`: Radius of the second circle
     /// ## Returns
     /// An `Option` containing a `CollisionResponse` if the circles intersect, otherwise `None`
-    pub fn circle_circle_intersection(center_a: Vec2D, radius_a: f64, center_b: Vec2D, radius_b: f64) -> Option<CollisionResponse> {
+    pub fn circle_circle(center_a: Vec2D, radius_a: f64, center_b: Vec2D, radius_b: f64) -> Option<CollisionResponse> {
         let radius = radius_a + radius_b;
         let p1 = center_b - center_a;
         let dist_sqr = Vec2D::squared_length(p1);
@@ -133,6 +134,12 @@ pub mod collision {
             None
         }
     }
+}
+
+pub mod collisions {
+    use super::numeric;
+    use super::Vec2D;
+
 
     /// Check for collision between two circles.
     ///
@@ -154,5 +161,16 @@ pub mod collision {
         rad_sum * rad_sum > center_x * center_x + center_y * center_y
     }
 
-    pub fn rectangle_collision(min: Vec2D, max: Vec2D)
+    pub fn rectangle_collision(min: Vec2D, max: Vec2D, pos: Vec2D, rad: f64) -> bool {
+        let cpt = Vec2D {
+            x: numeric::clamp(pos.x, min.x, max.x),
+            y: numeric::clamp(pos.y, min.y, max.y)
+        };
+
+        let distance_x = pos.x - cpt.x;
+        let distance_y = pos.y - cpt.y;
+        let distance_squared = distance_x * distance_x + distance_y * distance_y;
+
+        (distance_squared < rad * rad) || (pos.x >= min.x && pos.x <=max.x && pos.y >= min.y && pos.y <= max.y)
+    }
 }
