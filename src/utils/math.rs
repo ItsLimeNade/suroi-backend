@@ -1,19 +1,22 @@
-pub use std::f64::consts::{FRAC_PI_2 as HALF_PI, PI, TAU};
 use super::vectors::Vec2D;
+
+pub mod consts {
+    pub use std::f64::consts::{FRAC_PI_2 as HALF_PI, PI, TAU};
+}
 
 pub struct CollisionRecord {
     pub collided: bool,
-    pub distance: f64
+    pub distance: f64,
 }
 
 pub struct CollisionResponse {
     pub dir: Vec2D,
-    pub pen: f64
+    pub pen: f64,
 }
 
 pub struct IntersectionResponse {
     pub point: Vec2D,
-    pub normal: Vec2D
+    pub normal: Vec2D,
 }
 
 pub mod numeric {
@@ -66,7 +69,9 @@ pub mod numeric {
 }
 
 pub mod angle {
-    use super::{*, super::vectors::Vec2D, numeric};
+    use crate::typings::Orientation;
+
+    use super::{super::vectors::Vec2D, consts::*, numeric};
 
     /// Draws a line between two points and returns that line's angle
     /// ## Parameters
@@ -88,29 +93,107 @@ pub mod angle {
         numeric::abs_mod(end - start + PI, TAU) - PI
     }
     /// Degrees to radians
-    pub fn degToRad(degrees: f64) -> f64 {
+    pub fn deg_to_rad(degrees: f64) -> f64 {
         degrees * PI / 180.0
     }
     /// Radians to degrees
-    pub fn radToDeg(radians: f64) -> f64 {
+    pub fn rad_to_deg(radians: f64) -> f64 {
         radians / PI * 180.0
+    }
+
+    pub fn orientation_to_rotation(orientation: Orientation) -> f64 {
+        -normalize((orientation as u8 as f64) * HALF_PI)
     }
 }
 
 pub mod geometry {
     use super::Vec2D;
+    use crate::typings::Orientation;
 
     pub struct Circle {
         pub center: Vec2D,
-        pub radius: f64
+        pub radius: f64,
     }
 
+    pub struct Rectangle {
+        pub min: Vec2D,
+        pub max: Vec2D,
+    }
+
+    impl Rectangle {
+        /// Translates this rectangle by a position.
+        /// Mutates the original object, returns mutable reference to self for chaining.
+        pub fn translate(&mut self, pos: Vec2D) -> &mut Self {
+            self.min = self.min + pos;
+            self.max = self.max + pos;
+            self
+        }
+
+        /// Scale a rectangle by a factor.
+        /// Mutates the original object, returns mutable reference to self for chaining.
+        pub fn scale(&mut self, scale: f64) -> &mut Self {
+            self.min = self.min * scale;
+            self.max = self.max * scale;
+            self
+        }
+
+        /// Since Rectangle itself is orientation-agnostic and axis-aligned,
+        /// rotating 90 degrees is the only rotation necessary.
+        /// This function rotates the rectangle about its center.
+        /// Mutates the original object, returns mutable reference to self for chaining.
+        pub fn rotate_90(&mut self) -> &mut Self {
+            let center: Vec2D = (self.min + self.max) * 0.5;
+            let side1: f64 = center.x - self.min.x;
+            let side2: f64 = center.y - self.min.y;
+            self.min = Vec2D {
+                x: center.x - side2,
+                y: center.y - side1,
+            };
+            self.max = Vec2D {
+                x: center.x + side2,
+                y: center.y + side1,
+            };
+            self
+        }
+
+        /// Transform rectangle by position, scale, and orientation.
+        /// Mutates the original object, returns mutable reference to self for chaining.
+        pub fn transform(&mut self, pos: Vec2D, scale: f64, orientation: Orientation) -> &mut Self {
+            self.translate(pos).scale(scale);
+            if orientation as u8 % 2 == 1 {
+                self.rotate_90();
+            }
+            self
+        }
+    }
+
+    /// Calculate distance between two points
+    /// ## Parameters
+    /// - `a`: the first point
+    /// - `b`: the second point
+    pub fn distance(a: Vec2D, b: Vec2D) -> f64 {
+        distance_squared(a, b).sqrt()
+    }
+    /// Calculate squared distance between two points
+    /// ## Parameters
+    /// - `a`: the first point
+    /// - `b`: the second point
+    pub fn distance_squared(a: Vec2D, b: Vec2D) -> f64 {
+        (b.x - a.x).powi(2) + (b.y - a.y).powi(2)
+    }
+    /// Calculate area of a triangle whose vertices are the three points passed in
+    /// ## Parameters
+    /// - `a`: the first vertex
+    /// - `b`: the second vertex
+    /// - `c`: the third vertex
+    pub fn signed_tri_area(a: Vec2D, b: Vec2D, c: Vec2D) -> f64 {
+        (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x)
+    }
 }
 
-
 pub mod intersections {
-    use super::Vec2D;
     use super::CollisionResponse;
+    use super::Vec2D;
 
     /// Calculate the intersection between two circles
     /// ## Parameters
@@ -120,7 +203,12 @@ pub mod intersections {
     /// - `radius_b`: Radius of the second circle
     /// ## Returns
     /// An `Option` containing a `CollisionResponse` if the circles intersect, otherwise `None`
-    pub fn circle_circle(center_a: Vec2D, radius_a: f64, center_b: Vec2D, radius_b: f64) -> Option<CollisionResponse> {
+    pub fn circle_circle(
+        center_a: Vec2D,
+        radius_a: f64,
+        center_b: Vec2D,
+        radius_b: f64,
+    ) -> Option<CollisionResponse> {
         let radius = radius_a + radius_b;
         let p1 = center_b - center_a;
         let dist_sqr = Vec2D::squared_length(p1);
@@ -128,7 +216,7 @@ pub mod intersections {
         if dist_sqr < radius * radius {
             Some(CollisionResponse {
                 dir: Vec2D::normalize(p1, None),
-                pen: radius - f64::sqrt(dist_sqr)
+                pen: radius - f64::sqrt(dist_sqr),
             })
         } else {
             None
@@ -139,7 +227,6 @@ pub mod intersections {
 pub mod collisions {
     use super::numeric;
     use super::Vec2D;
-
 
     /// Check for collision between two circles.
     ///
@@ -153,7 +240,12 @@ pub mod collisions {
     ///
     /// ## Returns
     /// Returns `true` if the circles collide, `false` otherwise.
-    pub fn circle_collision(center_a: Vec2D, radius_a: f64, center_b: Vec2D, radius_b: f64) -> bool {
+    pub fn circle_circle_collision(
+        center_a: Vec2D,
+        radius_a: f64,
+        center_b: Vec2D,
+        radius_b: f64,
+    ) -> bool {
         let rad_sum = radius_a + radius_b;
         let center_x = center_a.x - center_b.x;
         let center_y = center_a.y - center_b.y;
@@ -161,16 +253,27 @@ pub mod collisions {
         rad_sum * rad_sum > center_x * center_x + center_y * center_y
     }
 
-    pub fn rectangle_collision(min: Vec2D, max: Vec2D, pos: Vec2D, rad: f64) -> bool {
+    /// Check for collision between a rectangle and a circle.
+    /// 
+    /// ## Parameters
+    /// - `min`: The rectangle minimum position
+    /// - `max`: The rectangle maximum position
+    /// - `pos`: The center of the circle
+    /// - `rad`: The radius of the circle
+    ///
+    /// ## Returns
+    /// Returns `true` if the shapes collide, `false` otherwise.
+    pub fn rect_circle_collision(min: Vec2D, max: Vec2D, pos: Vec2D, rad: f64) -> bool {
         let cpt = Vec2D {
             x: numeric::clamp(pos.x, min.x, max.x),
-            y: numeric::clamp(pos.y, min.y, max.y)
+            y: numeric::clamp(pos.y, min.y, max.y),
         };
 
         let distance_x = pos.x - cpt.x;
         let distance_y = pos.y - cpt.y;
         let distance_squared = distance_x * distance_x + distance_y * distance_y;
 
-        (distance_squared < rad * rad) || (pos.x >= min.x && pos.x <=max.x && pos.y >= min.y && pos.y <= max.y)
+        (distance_squared < rad * rad)
+            || (pos.x >= min.x && pos.x <= max.x && pos.y >= min.y && pos.y <= max.y)
     }
 }

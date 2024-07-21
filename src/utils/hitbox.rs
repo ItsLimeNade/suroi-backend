@@ -39,10 +39,10 @@ impl Collidable for CircleHitbox {
     fn collides_with(&self, other: &Hitbox) -> bool {
         match other {
             Hitbox::Circle(other) => {
-                collisions::circle_collision(other.position, other.radius, self.position, self.radius)
+                collisions::circle_circle_collision(other.position, other.radius, self.position, self.radius)
             },
             Hitbox::Rect(other) => {
-                collisions::rectangle_collision(other.min, other.max, self.position, self.radius)
+                collisions::rect_circle_collision(other.min, other.max, self.position, self.radius)
             },
             Hitbox::Group(other) => {
                 other.collides_with(&self.as_hitbox())
