@@ -1,3 +1,4 @@
+use super::utils::math::consts::*;
 use std::ops::Add;
 
 #[rustfmt::skip] // These two skips are to prevent rustfmt from
@@ -15,6 +16,17 @@ impl Add for Orientation {
             2 => Orientation::Down,
             3 => Orientation::Left,
             _ => Orientation::Up,
+        }
+    }
+}
+
+impl Orientation {
+    pub fn to_angle(self) -> f64 {
+        match self {
+            Orientation::Up => 0.0,
+            Orientation::Right => -HALF_PI,
+            Orientation::Down => -PI,
+            Orientation::Left => -HALF_PI * 3.0,
         }
     }
 }

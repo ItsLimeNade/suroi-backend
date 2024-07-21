@@ -51,6 +51,7 @@ pub fn rand_sign() -> i8 { //IMPLEMENT ONE BIT TYPE LET'S GOOO
     }
 }
 
+#[allow(non_snake_case)]
 pub fn rand_vec2D(min_x: f64, max_x: f64, min_y: f64, max_y: f64) -> Vec2D {
     Vec2D {
         x: random_float(min_x, max_x),
