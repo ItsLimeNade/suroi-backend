@@ -20,6 +20,14 @@ pub struct IntersectionResponse {
 }
 
 pub mod numeric {
+    pub fn get_sign(number: f64, inverse: bool) -> i8 {
+        if inverse {
+            return if number > 0.0 { -1 } else { 1 };
+        } else {
+            return if number > 0.0 { 1 } else { -1 };
+        }
+    }
+
     /// Works like regular modulo, but negative numbers cycle back around: hence,
     /// `-1 % 4` gives `3` and not `-1`
     /// ## Parameters
@@ -192,8 +200,9 @@ pub mod geometry {
 }
 
 pub mod intersections {
-    use super::CollisionResponse;
+    use super::numeric::{clamp, get_sign};
     use super::Vec2D;
+    use super::CollisionResponse;
 
     /// Calculate the intersection between two circles
     /// ## Parameters
@@ -203,12 +212,7 @@ pub mod intersections {
     /// - `radius_b`: Radius of the second circle
     /// ## Returns
     /// An `Option` containing a `CollisionResponse` if the circles intersect, otherwise `None`
-    pub fn circle_circle(
-        center_a: Vec2D,
-        radius_a: f64,
-        center_b: Vec2D,
-        radius_b: f64,
-    ) -> Option<CollisionResponse> {
+    pub fn circles(center_a: Vec2D, radius_a: f64, center_b: Vec2D, radius_b: f64) -> Option<CollisionResponse> {
         let radius = radius_a + radius_b;
         let p1 = center_b - center_a;
         let dist_sqr = Vec2D::squared_length(p1);
@@ -220,6 +224,39 @@ pub mod intersections {
             })
         } else {
             None
+        }
+    }
+
+    pub fn rect_circle(min: Vec2D, max: Vec2D, pos: Vec2D, radius: f64) -> Option<CollisionResponse> {
+        if min.x <=pos.x && pos.x <= max.x && min.y <=pos.y && pos.y <= max.y {
+            let half_dimension: Vec2D = Vec2D::scale(max - min, 0.5);
+            let p = pos - (min + half_dimension);
+            let xp = f64::abs(p.x) - half_dimension.x - radius;
+            let yp = f64::abs(p.y) - half_dimension.y - radius;
+
+            if xp > yp {
+                return Some(CollisionResponse {
+                    dir: Vec2D::new(f64::from(get_sign(p.x, false)), 0.0),
+                    pen: -xp
+                });
+            } else {
+                return Some(CollisionResponse {
+                    dir: Vec2D::new(0.0, f64::from(get_sign(p.y, false))),
+                    pen: -yp
+                });
+            }
+        }
+
+        let dir = Vec2D::new(clamp(pos.x, min.x, max.x), clamp(pos.y, min.y, max.y)) - pos;
+        let dist_sqrd = Vec2D::squared_length(dir);
+
+        if dist_sqrd < radius * radius {
+            return Some(CollisionResponse {
+                dir: Vec2D::normalize(dir, None),
+                pen: radius - f64::sqrt(dist_sqrd)
+            });
+        } else {
+            return None;
         }
     }
 }
@@ -240,12 +277,7 @@ pub mod collisions {
     ///
     /// ## Returns
     /// Returns `true` if the circles collide, `false` otherwise.
-    pub fn circle_circle_collision(
-        center_a: Vec2D,
-        radius_a: f64,
-        center_b: Vec2D,
-        radius_b: f64,
-    ) -> bool {
+    pub fn check_circles(center_a: Vec2D, radius_a: f64, center_b: Vec2D, radius_b: f64) -> bool {
         let rad_sum = radius_a + radius_b;
         let center_x = center_a.x - center_b.x;
         let center_y = center_a.y - center_b.y;
@@ -254,7 +286,7 @@ pub mod collisions {
     }
 
     /// Check for collision between a rectangle and a circle.
-    /// 
+    ///
     /// ## Parameters
     /// - `min`: The rectangle minimum position
     /// - `max`: The rectangle maximum position
@@ -263,7 +295,7 @@ pub mod collisions {
     ///
     /// ## Returns
     /// Returns `true` if the shapes collide, `false` otherwise.
-    pub fn rect_circle_collision(min: Vec2D, max: Vec2D, pos: Vec2D, rad: f64) -> bool {
+    pub fn check_rects(min: Vec2D, max: Vec2D, pos: Vec2D, rad: f64) -> bool {
         let cpt = Vec2D {
             x: numeric::clamp(pos.x, min.x, max.x),
             y: numeric::clamp(pos.y, min.y, max.y),
