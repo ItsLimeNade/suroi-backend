@@ -1,6 +1,7 @@
 use crate::typings::Orientation;
 use super::vectors::Vec2D;
 use super::math::{collisions, intersections, CollisionRecord, CollisionResponse, IntersectionResponse};
+use super::math::collisions::distances;
 
 #[derive(Debug, Clone)]
 pub enum Hitbox {
@@ -14,7 +15,7 @@ pub trait Collidable {
     fn as_hitbox(&self) -> Hitbox;
     fn collides_with(&self, other: &Hitbox) -> bool;
     fn resolve_collision(&mut self, other: &Hitbox);
-    fn distance_to(&self, other: &Self) -> f64;
+    fn distance_to(&self, other: &Hitbox) -> Option<CollisionRecord>;
     fn transform(&self, pos: Vec2D, scale: f64, orientation: Orientation) -> Hitbox;
     fn scale(&self, scale: f64);
     fn intersects_line(&self, a:Vec2D, b:Vec2D) -> IntersectionResponse;
@@ -85,8 +86,19 @@ impl Collidable for CircleHitbox {
         }
     }
 
-    fn distance_to(&self, other: &Self) -> f64 {
-        todo!()
+    fn distance_to(&self, other: &Hitbox) -> Option<CollisionRecord> {
+        match other {
+            Hitbox::Circle(other) => {
+                Some(distances::circles(other.position, other.radius, self.position, self.radius))
+            },
+            Hitbox::Rect(other) => {
+                Some(distances::circle_rect(other.min, other.max, self.position, self.radius))
+            },
+            _ => {
+                CircleHitbox::panic_unknown_subclass(other);
+                None
+            }
+        }
     }
 
     fn transform(&self, pos: Vec2D, scale: f64, orientation: Orientation) -> Hitbox {
@@ -137,7 +149,7 @@ impl Collidable for RectangleHitbox {
         todo!()
     }
 
-    fn distance_to(&self, other: &Self) -> f64 {
+    fn distance_to(&self, other: &Hitbox) -> Option<CollisionRecord> {
         todo!()
     }
 
@@ -192,7 +204,7 @@ impl Collidable for PolygonHitbox {
         todo!()
     }
 
-    fn distance_to(&self, other: &Self) -> f64 {
+    fn distance_to(&self, other: &Hitbox) -> Option<CollisionRecord> {
         todo!()
     }
 
@@ -248,7 +260,7 @@ impl Collidable for GroupHitbox {
         todo!()
     }
 
-    fn distance_to(&self, other: &Self) -> f64 {
+    fn distance_to(&self, other: &Hitbox) -> Option<CollisionRecord> {
         todo!()
     }
 

@@ -263,7 +263,38 @@ pub mod intersections {
 
 pub mod collisions {
     use super::numeric;
+    use super::CollisionRecord;
     use super::Vec2D;
+
+    pub mod distances {
+        use super::CollisionRecord;
+        use super::Vec2D;
+
+        pub fn circles(center_a: Vec2D, radius_a: f64, center_b: Vec2D, radius_b: f64) -> CollisionRecord {
+            let rad_sum = radius_a + radius_b;
+            let rad_sqrd = rad_sum * rad_sum;
+            let x_dist = center_a.x - center_b.x;
+            let y_dist = center_a.y - center_b.y;
+            let xy = x_dist * x_dist + y_dist * y_dist;
+
+            CollisionRecord {
+                collided: rad_sqrd > xy,
+                distance: xy - rad_sqrd
+            }
+        }
+
+        pub fn circle_rect(min: Vec2D, max: Vec2D, position: Vec2D, radius: f64) -> CollisionRecord {
+            let dist_x = (min.x.max(max.x.min(position.x)) - position.x).abs();
+            let dist_y = (min.y.max(max.y.min(position.y)) - position.y).abs();
+            let rad_squared = radius * radius;
+            let dist_squared = dist_x * dist_x + dist_y * dist_y;
+
+            CollisionRecord {
+                collided: dist_squared < rad_squared,
+                distance: dist_squared - rad_squared,
+            }
+        }
+    }
 
     /// Check for collision between two circles.
     ///
@@ -308,4 +339,5 @@ pub mod collisions {
         (distance_squared < rad * rad)
             || (pos.x >= min.x && pos.x <= max.x && pos.y >= min.y && pos.y <= max.y)
     }
+
 }
