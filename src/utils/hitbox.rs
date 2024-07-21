@@ -63,14 +63,14 @@ impl Collidable for CircleHitbox {
             Hitbox::Circle(other) => {
                 let col = intersections::circles(self.position, self.radius, other.position, other.radius);
                 match col {
-                    Some(collision) => self.position = self.position - Vec2D::scale(collision.dir, collision.pen),
+                    Some(collision) => self.position = self.position - (collision.dir * collision.pen),
                     _ => ()
                 }
             },
             Hitbox::Rect(other) => {
                 let col = intersections::rect_circle(other.min, other.max, self.position, self.radius);
                 match col {
-                    Some(collision) => self.position = self.position - Vec2D::scale(collision.dir, collision.pen),
+                    Some(collision) => self.position = self.position - (collision.dir * collision.pen),
                     _ => ()
                 }
             },

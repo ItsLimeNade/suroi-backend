@@ -53,7 +53,7 @@ pub mod vectors {
 
     #[test]
     pub fn scale() {
-        let mut vec1: Vec2D = Vec2D::new(5.0, 5.0);
+        let vec1: Vec2D = Vec2D::new(5.0, 5.0);
         let vec2: Vec2D = Vec2D::new(5.0, 5.0);
 
         assert_eq!(Vec2D::new(10.0, 10.0), vec1 * 2.0);

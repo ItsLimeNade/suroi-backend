@@ -229,7 +229,7 @@ pub mod intersections {
 
     pub fn rect_circle(min: Vec2D, max: Vec2D, pos: Vec2D, radius: f64) -> Option<CollisionResponse> {
         if min.x <=pos.x && pos.x <= max.x && min.y <=pos.y && pos.y <= max.y {
-            let half_dimension: Vec2D = Vec2D::scale(max - min, 0.5);
+            let half_dimension: Vec2D = (max - min ) * 0.5;
             let p = pos - (min + half_dimension);
             let xp = f64::abs(p.x) - half_dimension.x - radius;
             let yp = f64::abs(p.y) - half_dimension.y - radius;
