@@ -100,13 +100,13 @@ pub struct PlayerGameConstants<'a> {
 	pub name_max_length: u8,
 	pub default_name: &'a str,
 	pub default_skin: &'a str,
-	pub default_health: u16,
-	pub max_adrenaline: u16,
+	pub default_health: u8,
+	pub max_adrenaline: u8,
 	// inventorySlotTypings,
 	// maxWeapons: inventorySlotTypings.length,
 	pub kill_leader_min_kills: u8,
-	pub max_mouse_dist: u16,
-	pub revive_time: f32,
+	pub max_mouse_dist: u16, // u8 goes to 255, change to u16 if it could be >255
+	pub revive_time: u16,
 	pub max_revive_dist: f32,
 }
 
