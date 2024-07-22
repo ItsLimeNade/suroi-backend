@@ -379,7 +379,7 @@ pub mod collisions {
     ///
     /// ## Returns
     /// Returns `true` if the shapes collide, `false` otherwise.
-    pub fn check_rects(min: Vec2D, max: Vec2D, pos: Vec2D, rad: f64) -> bool {
+    pub fn check_rect_circle(min: Vec2D, max: Vec2D, pos: Vec2D, rad: f64) -> bool {
         let cpt = Vec2D {
             x: numeric::clamp(pos.x, min.x, max.x),
             y: numeric::clamp(pos.y, min.y, max.y),
