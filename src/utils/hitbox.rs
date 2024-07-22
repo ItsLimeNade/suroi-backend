@@ -49,7 +49,7 @@ impl Collidable for CircleHitbox {
                 collisions::check_circles(other.position, other.radius, self.position, self.radius)
             },
             Hitbox::Rect(other) => {
-                collisions::check_rects(other.min, other.max, self.position, self.radius)
+                collisions::check_rect_circle(other.min, other.max, self.position, self.radius)
             },
             Hitbox::Group(other) => {
                 other.collides_with(&self.as_hitbox())
