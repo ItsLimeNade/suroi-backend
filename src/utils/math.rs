@@ -28,6 +28,14 @@ pub mod numeric {
         }
     }
 
+    /// Adds two orientations and returns the sum modulo 4
+	/// ## Parameters
+    /// - `n1`: The first orientation
+    /// - `n2`: The second orientation
+    pub fn add_orientations(n1: f64, n2: f64) -> f64 {
+        (n1 + n2) % 4.0
+    }
+
     /// Works like regular modulo, but negative numbers cycle back around: hence,
     /// `-1 % 4` gives `3` and not `-1`
     /// ## Parameters
@@ -384,5 +392,85 @@ pub mod collisions {
         (distance_squared < rad * rad)
             || (pos.x >= min.x && pos.x <= max.x && pos.y >= min.y && pos.y <= max.y)
     }
+
+}
+
+pub mod ease {
+	use super::{super::vectors::Vec2D, consts::*, numeric};
+
+	pub fn linear(t: f64) -> f64 { t }
+
+	pub fn sine_in(t: f64) -> f64 { 1.0 - (HALF_PI * t).cos() }
+	pub fn sine_out(t: f64) -> f64 { (HALF_PI * t).sin() }
+	pub fn sine_in_out(t: f64) -> f64 { 0.5 * (1.0 - (PI * t).cos()) }
+
+	pub fn circ_in(t: f64) -> f64 { 1.0 - (1.0 - (t * t)).sqrt() }
+	pub fn circ_out(t: f64) -> f64 { (1.0 - (t - 1.0).powf(2.0)).sqrt() }
+	pub fn circ_in_out(t: f64) -> f64 {
+		if t < 0.5 {
+			0.5 * (1.0 - (1.0 - (2.0 * t).powf(2.0)).sqrt())
+		} else {
+			0.5 * ((1.0 - (-2.0 * (1.0 - t)).powf(2.0)).sqrt() + 1.0)
+		}
+	}
+
+	pub fn elastic_in(t: f64) -> f64 {
+		if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
+			t
+		} else {
+			-(2.0_f64.powf(10.0 * (t - 1.0))) * (PI * ((40.0 * (t - 1.0)) - 3.0) / 6.0).sin()
+		}
+	}
+	pub fn elastic_out(t: f64) -> f64 {
+		if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
+			t
+		} else {
+			(2.0_f64.powf(-10.0 * t)) * (PI * (40.0 * t - 3.0) / 6.0).sin() + 1.0
+		}
+	}
+	pub fn elastic_in_out(t: f64) -> f64 {
+		if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
+			t
+		} else if t < 0.5 {
+			-(2.0_f64.powf(10.0 * (2.0 * t - 1.0) - 1.0)) * (PI * (80.0 * (2.0 * t - 1.0) - 9.0) / 18.0).sin()
+		} else {
+			2.0_f64.powf(-10.0 * (2.0 * t - 1.0) - 1.0) * (PI * (80.0 * (2.0 * t - 1.0) - 9.0) / 18.0).sin() + 1.0
+		}
+	}
+	pub fn elastic_out_2(t: f64) -> f64 { 2.0_f64.powf(-10.0 * t) * ((TAU * (t - 0.75 / 4.0)) / 0.75).sin() + 1.0 }
+
+	pub fn expo_in(t: f64) -> f64 {
+		if t <= 0.0 {
+			0.0_f64
+		} else {
+			2.0_f64.powf(-10.0 * (1.0 - t))
+		}
+	}
+	pub fn expo_out(t: f64) -> f64 {
+		if t >= 1.0 {
+			1.0_f64
+		} else {
+			1.0 - 2.0_f64.powf(-10.0 * t)
+		}
+	}
+	pub fn expo_in_out(t: f64) -> f64 {
+		if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
+			t
+		} else if t < 0.5 {
+			2.0_f64.powf(10.0 * (2.0 * t - 1.0) - 1.0)
+		} else {
+			1.0 - 2.0_f64.powf(-10.0 * (2.0 * t - 1.0) - 1.0)
+		}
+	}
+
+	pub fn back_in(t: f64) -> f64 { (3.0_f64.sqrt() * (t - 1.0) + t) * t * t }
+	pub fn back_out(t: f64) -> f64 { ((3.0_f64.sqrt() + 1.0) * t - 1.0) * (t - 1.0).powf(2.0) + 1.0 }
+	pub fn back_in_out(t: f64) -> f64 {
+		if t < 0.5 {
+			4.0 * t * t * (3.6 * t - 1.3)
+		} else {
+			4.0 * (t - 1.0).powf(2.0) * (3.6 * t - 2.3) + 1.0
+		}
+	}
 
 }
