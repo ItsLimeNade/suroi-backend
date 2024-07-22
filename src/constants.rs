@@ -7,6 +7,7 @@ pub enum TeamSize {
     Squad,
 }
 
+#[derive(Hash, Eq, PartialEq, Copy, Clone)] // we need all of those for the object pool
 pub enum ObjectCategory {
     Player,
     Obstacle,
