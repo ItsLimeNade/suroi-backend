@@ -35,7 +35,7 @@ pub struct FontStyles {
     overlined: u8
 }
 
-pub static color_styles: ColorStyles = ColorStyles {
+pub const color_styles: ColorStyles = ColorStyles {
     foreground: Colors {
         black: ColorData { normal: 30, bright: 90 },
         red: ColorData { normal: 31, bright: 91 },
@@ -60,7 +60,7 @@ pub static color_styles: ColorStyles = ColorStyles {
     }
 };
 
-pub static font_styles: FontStyles = FontStyles {
+pub const font_styles: FontStyles = FontStyles {
     bold: 1,
     faint: 2,
     italic: 3,
