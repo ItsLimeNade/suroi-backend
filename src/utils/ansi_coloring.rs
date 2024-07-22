@@ -1,3 +1,5 @@
+// Thanks to @ersek-huba for remaking this file in Rust for us!
+
 pub struct ColorData {
     normal: u8,
     bright: u8
