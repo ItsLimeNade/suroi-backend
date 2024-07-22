@@ -105,7 +105,7 @@ pub struct PlayerGameConstants<'a> {
 	// inventorySlotTypings,
 	// maxWeapons: inventorySlotTypings.length,
 	pub kill_leader_min_kills: u8,
-	pub max_mouse_dist: u16, // u8 goes to 255, change to u16 if it could be >255
+	pub max_mouse_dist: u8, // u8 goes to 255, change to u16 if it could be >255
 	pub revive_time: u16,
 	pub max_revive_dist: f32,
 }
