@@ -1,7 +1,8 @@
 use crate::typings::Orientation;
 use super::vectors::Vec2D;
-use super::math::{collisions, intersections, CollisionRecord, CollisionResponse, IntersectionResponse};
+use super::math::{collisions, intersections,geometry ,CollisionRecord, CollisionResponse, IntersectionResponse};
 use super::math::collisions::distances;
+use super::random::random_point_in_circle;
 
 #[derive(Debug, Clone)]
 pub enum Hitbox {
@@ -17,8 +18,8 @@ pub trait Collidable {
     fn resolve_collision(&mut self, other: &Hitbox);
     fn distance_to(&self, other: &Hitbox) -> Option<CollisionRecord>;
     fn transform(&self, pos: Vec2D, scale: f64, orientation: Orientation) -> Hitbox;
-    fn scale(&self, scale: f64);
-    fn intersects_line(&self, a:Vec2D, b:Vec2D) -> IntersectionResponse;
+    fn scale(&mut self, scale: f64);
+    fn intersects_line(&self, a:Vec2D, b:Vec2D) -> Option<IntersectionResponse>;
     fn random_point(&self) -> Vec2D;
     fn as_rectangle(&self) -> RectangleHitbox;
     fn is_vec_inside(&self, vec: Vec2D) -> bool;
@@ -102,31 +103,45 @@ impl Collidable for CircleHitbox {
     }
 
     fn transform(&self, pos: Vec2D, scale: f64, orientation: Orientation) -> Hitbox {
-        todo!()
+        let circ = CircleHitbox {
+            position: Vec2D::add_adjust(pos, self.position, orientation),
+            radius: self.radius * scale
+        };
+        Hitbox::Circle(circ)
     }
 
-    fn scale(&self, scale: f64) {
-        todo!()
+    fn scale(&mut self, scale: f64) {
+        self.radius *= scale;
     }
 
-    fn intersects_line(&self, a: Vec2D, b: Vec2D) -> IntersectionResponse {
-        todo!()
+    fn intersects_line(&self, a: Vec2D, b: Vec2D) -> Option<IntersectionResponse> {
+        intersections::line_circle(a, b, self.position, self.radius)
     }
 
     fn random_point(&self) -> Vec2D {
-        todo!()
+        random_point_in_circle(self.position, None, self.radius)
     }
 
     fn as_rectangle(&self) -> RectangleHitbox {
-        todo!()
+        RectangleHitbox {
+            min: Vec2D {
+                x: self.position.x - self.radius,
+                y: self.position.y - self.radius
+            },
+            max: Vec2D {
+                x: self.position.x + self.radius,
+                y: self.position.y + self.radius
+            }
+
+        }
     }
 
     fn is_vec_inside(&self, vec: Vec2D) -> bool {
-        todo!()
+        geometry::distance(vec, self.position) < self.radius
     }
 
     fn get_center(&self) -> Vec2D {
-        todo!()
+        self.position
     }
 }
 
@@ -157,11 +172,11 @@ impl Collidable for RectangleHitbox {
         todo!()
     }
 
-    fn scale(&self, scale: f64) {
+    fn scale(&mut self, scale: f64) {
         todo!()
     }
 
-    fn intersects_line(&self, a: Vec2D, b: Vec2D) -> IntersectionResponse {
+    fn intersects_line(&self, a: Vec2D, b: Vec2D) -> Option<IntersectionResponse> {
         todo!()
     }
 
@@ -212,11 +227,11 @@ impl Collidable for PolygonHitbox {
         todo!()
     }
 
-    fn scale(&self, scale: f64) {
+    fn scale(&mut self, scale: f64) {
         todo!()
     }
 
-    fn intersects_line(&self, a: Vec2D, b: Vec2D) -> IntersectionResponse {
+    fn intersects_line(&self, a: Vec2D, b: Vec2D) -> Option<IntersectionResponse> {
         todo!()
     }
 
@@ -268,11 +283,11 @@ impl Collidable for GroupHitbox {
         todo!()
     }
 
-    fn scale(&self, scale: f64) {
+    fn scale(&mut self, scale: f64) {
         todo!()
     }
 
-    fn intersects_line(&self, a: Vec2D, b: Vec2D) -> IntersectionResponse {
+    fn intersects_line(&self, a: Vec2D, b: Vec2D) -> Option<IntersectionResponse> {
         todo!()
     }
 

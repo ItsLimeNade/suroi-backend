@@ -48,7 +48,7 @@ impl Mul for Vec2D {
 impl Mul<f64> for Vec2D {
     type Output = Self;
 
-    fn mul(self, rhs: f64) -> Self::Output {
+    fn mul(self, rhs: f64) -> Self {
         Vec2D {
             x: self.x * rhs,
             y: self.y * rhs
@@ -98,47 +98,47 @@ impl Vec2D {
         }
     }
 
-    pub fn squared_length(vector: Vec2D) -> f64 {
-        vector.x * vector.x + vector.y * vector.y
+    pub fn squared_length(self) -> f64 {
+        self.x * self.x + self.y * self.y
     }
 
-    pub fn length(vector: Vec2D) -> f64 {
-        f64::sqrt(Vec2D::squared_length(vector))
+    pub fn length(self) -> f64 {
+        f64::sqrt(self.squared_length())
     }
 
-    pub fn direction(vector: Vec2D) -> f64 {
-        f64::atan2(vector.y, vector.x)
+    pub fn direction(self) -> f64 {
+        f64::atan2(self.y, self.x)
     }
 
-    pub fn angle(vec1: Vec2D, vec2: Vec2D) -> f64  {
-        f64::acos((vec1.x * vec2.x + vec1.y * vec2.y) / f64::sqrt(Vec2D::length(vec1) * Vec2D::length(vec2)))
+    pub fn angle(self, vec2: Vec2D) -> f64  {
+        f64::acos((self.x * vec2.x + self.y * vec2.y) / f64::sqrt(self.length() * vec2.length()))
     }
 
-    pub fn lerp(start: Vec2D, end: Vec2D, interp_factor: f64) -> Self {
-        start * (1.0 - interp_factor) + end * interp_factor
+    pub fn lerp(self, end: Vec2D, interp_factor: f64) -> Self {
+        self * (1.0 - interp_factor) + end * interp_factor
     }
 
-    pub fn project(vec1: Vec2D, vec2: Vec2D) -> Self {
-        vec2 * (vec1 * vec2 / Vec2D::squared_length(vec2))
+    pub fn project(self, vec2: Vec2D) -> Self {
+        vec2 * (self * vec2 / vec2.squared_length())
     }
 
-    pub fn normalize(vector: Vec2D, fallback: Option<Vec2D>) -> Self {
+    pub fn normalize(self, fallback: Option<Vec2D>) -> Self {
         let fallback: Vec2D = fallback.unwrap_or(Vec2D::new(1.0, 0.0));
-        let len = Vec2D::length(vector);
+        let len = self.length();
 
         if len > 0.000001 {
             Vec2D {
-                x: vector.x / len,
-                y: vector.y / len
+                x: self.x / len,
+                y: self.y / len
             }
         } else {
             fallback
         }
     }
 
-    pub fn equals(vec1: Vec2D, vec2: Vec2D, epsilon: Option<f64>) -> bool {
+    pub fn equals(self, vec2: Vec2D, epsilon: Option<f64>) -> bool {
         let epsilon: f64 = epsilon.unwrap_or(0.001);
-        f64::abs(vec1.x - vec2.x) <= epsilon && f64::abs(vec1.y - vec2.y) <= epsilon
+        f64::abs(self.x - vec2.x) <= epsilon && f64::abs(self.y - vec2.y) <= epsilon
     }
 
     pub fn from_polar(angle: f64, magnitude: Option<f64>) -> Self {
@@ -149,7 +149,7 @@ impl Vec2D {
         }
     }
 
-    pub fn add_adjust(pos1: Vec2D, pos2: Vec2D, orientation: Orientation) -> Vec2D {
-        pos1 + pos2.rotate(orientation.to_angle())
+    pub fn add_adjust(self, pos2: Vec2D, orientation: Orientation) -> Vec2D {
+        self + pos2.rotate(orientation.to_angle())
     }
 }

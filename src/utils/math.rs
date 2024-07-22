@@ -201,7 +201,7 @@ pub mod geometry {
 
 pub mod intersections {
     use super::numeric::{clamp, get_sign};
-    use super::Vec2D;
+    use super::{IntersectionResponse, Vec2D};
     use super::CollisionResponse;
 
     /// Calculate the intersection between two circles
@@ -258,6 +258,51 @@ pub mod intersections {
         } else {
             return None;
         }
+    }
+
+    /// Determines where a line intersects a circle
+    ///
+    /// ## Parameters
+    /// - `start_point`: The start of the line
+    /// - `end_point`: The end of the line
+    /// - `circle_pos`: The position of the circle
+    /// - `radius`: The radius of the circle
+    /// ## Returns
+    /// An `Option` containing an intersection response with the intersection position and normal `Vector`s, or `None` if they don't intersect
+    pub fn line_circle(start_point: Vec2D, end_point: Vec2D, circle_pos: Vec2D, circle_radius: f64) -> Option<IntersectionResponse> {
+        let mut line = end_point - start_point;
+        let len = line.length().max(0.000001);
+        line = line.normalize(None);
+
+        let start_circle = start_point - circle_pos;
+        let proj_len = start_circle * line;
+        let sqrd_dist = start_circle * start_circle - circle_radius * circle_radius;
+
+        if sqrd_dist > 0.0 && proj_len > 0.0 {
+            return None;
+        }
+
+        let disc_sq = proj_len * proj_len - sqrd_dist;
+        if disc_sq < 0.0 {
+            return None;
+        }
+
+        let disc = disc_sq.sqrt();
+        let intersec_dist = if -proj_len < disc {
+            disc - proj_len
+        } else {
+            -proj_len - disc
+        };
+
+        if intersec_dist <= len {
+            let point = start_point + (line * intersec_dist);
+            return Some(IntersectionResponse {
+                point,
+                normal: (point - circle_pos).normalize(None)
+            });
+        }
+
+        return None;
     }
 }
 
