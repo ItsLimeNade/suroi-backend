@@ -1,7 +1,7 @@
 use crate::typings::Orientation;
+use super::math::intersections::rects;
 use super::vectors::Vec2D;
-use super::math::{collisions, intersections,geometry ,CollisionRecord, IntersectionResponse};
-use super::math::collisions::distances;
+use super::math::{collisions, collisions::distances, intersections,geometry ,CollisionRecord, IntersectionResponse};
 use super::random::random_point_in_circle;
 
 #[derive(Debug, Clone)]
@@ -17,7 +17,7 @@ pub trait Collidable {
     fn collides_with(&self, other: &Hitbox) -> bool;
     fn resolve_collision(&mut self, other: &Hitbox);
     fn distance_to(&self, other: &Hitbox) -> Option<CollisionRecord>;
-    fn transform(&self, pos: Vec2D, scale: f64, orientation: Orientation) -> Hitbox;
+    fn transform(&self, pos: Vec2D, scale: Option<f64>, orientation: Option<Orientation>) -> Self;
     fn scale(&mut self, scale: f64);
     fn intersects_line(&self, a:Vec2D, b:Vec2D) -> Option<IntersectionResponse>;
     fn random_point(&self) -> Vec2D;
@@ -102,12 +102,11 @@ impl Collidable for CircleHitbox {
         }
     }
 
-    fn transform(&self, pos: Vec2D, scale: f64, orientation: Orientation) -> Hitbox {
-        let circ = CircleHitbox {
-            position: Vec2D::add_adjust(pos, self.position, orientation),
-            radius: self.radius * scale
-        };
-        Hitbox::Circle(circ)
+    fn transform(&self, pos: Vec2D, scale: Option<f64>, orientation: Option<Orientation>) -> Self {
+        CircleHitbox {
+            position: Vec2D::add_adjust(pos, self.position, orientation.unwrap_or(Orientation::Up)),
+            radius: self.radius * scale.unwrap_or(1.0)
+        }
     }
 
     fn scale(&mut self, scale: f64) {
@@ -151,24 +150,94 @@ pub struct RectangleHitbox {
     max: Vec2D,
 }
 
+impl RectangleHitbox {
+    pub fn from_line(a: Vec2D, b: Vec2D) -> RectangleHitbox {
+        RectangleHitbox {
+            min: Vec2D {
+                x: a.x.min(b.x),
+                y: a.y.min(b.y)
+            },
+            max: Vec2D {
+                x: a.x.max(b.x),
+                y: a.y.max(b.y)
+            }
+        }
+    }
+
+    pub fn from_rect(width: f64, height: f64, center: Option<Vec2D>) -> RectangleHitbox {
+        let size = Vec2D::new(width / 2.0, height / 2.0);
+        let center = center.unwrap_or(Vec2D::new(0.0, 0.0));
+
+        RectangleHitbox {
+            min: center - size,
+            max: center + size
+        }
+    }
+}
+
 impl Collidable for RectangleHitbox {
     fn as_hitbox(&self) -> Hitbox {
-        todo!()
+        Hitbox::Rect(self.clone())
     }
 
     fn collides_with(&self, other: &Hitbox) -> bool {
-        todo!()
+        match other {
+            Hitbox::Circle(other) => {
+                collisions::check_rect_circle(self.min, self.max, other.position, other.radius)
+            },
+            Hitbox::Rect(other) => {
+                collisions::check_rects(other.min, other.max, self.min, self.max)
+            },
+            Hitbox::Polygon(other) => {
+                other.collides_with(&self.as_hitbox())
+            },
+            Hitbox::Group(other) => {
+                other.collides_with(&self.as_hitbox())
+            }
+        }
     }
 
     fn resolve_collision(&mut self, other: &Hitbox) {
-        todo!()
+        match other {
+            Hitbox::Circle(other) => {
+                let col = intersections::rect_circle(self.min, self.max, other.position, other.radius);
+
+                match col {
+                    Some(collision) => {
+                        let rect = self.transform(collision.dir * -collision.pen, None, None);
+                        self.max = rect.max;
+                        self.min = self.min;
+                    }
+                    None => ()
+                }
+            },
+            Hitbox::Rect(other) => {
+                let col = intersections::rects(self.min, self.max, other.min, other.max);
+                match col {
+                    Some(collision) => {
+                        let rect = self.transform(collision.dir * -collision.pen, None, None);
+                        self.min = rect.min;
+                        self.max = rect.max
+                    },
+                    None => ()
+                }
+            },
+            Hitbox::Group(other) => {
+                for hitbox in &other.hitboxes {
+                    if self.collides_with(&hitbox) {
+                        self.resolve_collision(&hitbox)
+                    }
+                }
+            },
+            _ => RectangleHitbox::panic_unknown_subclass(other)
+        }
     }
 
     fn distance_to(&self, other: &Hitbox) -> Option<CollisionRecord> {
         todo!()
     }
 
-    fn transform(&self, pos: Vec2D, scale: f64, orientation: Orientation) -> Hitbox {
+    fn transform(&self, pos: Vec2D, scale: Option<f64>, orientation: Option<Orientation>) -> Self {
         todo!()
     }
 
@@ -223,7 +292,7 @@ impl Collidable for PolygonHitbox {
         todo!()
     }
 
-    fn transform(&self, pos: Vec2D, scale: f64, orientation: Orientation) -> Hitbox {
+    fn transform(&self, pos: Vec2D, scale: Option<f64>, orientation: Option<Orientation>) -> Self {
         todo!()
     }
 
@@ -279,7 +348,7 @@ impl Collidable for GroupHitbox {
         todo!()
     }
 
-    fn transform(&self, pos: Vec2D, scale: f64, orientation: Orientation) -> Hitbox {
+    fn transform(&self, pos: Vec2D, scale: Option<f64>, orientation: Option<Orientation>) -> Self {
         todo!()
     }
 

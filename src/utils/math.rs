@@ -312,6 +312,30 @@ pub mod intersections {
 
         None
     }
+
+    pub fn rects(min0: Vec2D, max0: Vec2D, min1: Vec2D, max1: Vec2D) -> Option<CollisionResponse> {
+        let e0 = (max0 - min0) * 0.5;
+        let e1 = (max1 - min1) * 0.5;
+        let n = (min1 + e1) - (min0 + e0);
+        let xo = e0.x + e1.x - n.x.abs();
+        let yo = e0.y + e1.y - n.y.abs();
+
+        if xo > 0.0 && yo > 0.0 {
+            if xo > yo {
+                Some(CollisionResponse {
+                    dir: Vec2D::new(n.x.signum() * 1.0, 0.0),
+                    pen: xo,
+                })
+            } else {
+                Some(CollisionResponse {
+                    dir: Vec2D::new(0.0, n.y.signum() * 1.0),
+                    pen: yo,
+                })
+            }
+        } else {
+            None
+        }
+    }
 }
 
 pub mod collisions {
@@ -391,6 +415,10 @@ pub mod collisions {
 
         (distance_squared < rad * rad)
             || (pos.x >= min.x && pos.x <= max.x && pos.y >= min.y && pos.y <= max.y)
+    }
+
+    pub fn check_rects(min_a: Vec2D, max_a: Vec2D, min_b: Vec2D, max_b: Vec2D) -> bool {
+        min_b.x < max_a.x && min_b.y < max_a.y && min_a.x < max_b.x && min_a.y < max_b.y
     }
 
 }
