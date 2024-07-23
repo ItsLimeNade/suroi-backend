@@ -1,8 +1,6 @@
-use crate::utils::vectors::Vec2D;
-
 #[cfg(test)]
-pub mod vectors {
-    use super::*;
+pub mod vector {
+    use crate::utils::vectors::Vec2D;
 
     #[test]
     pub fn create() {

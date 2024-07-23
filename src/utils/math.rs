@@ -22,9 +22,9 @@ pub struct IntersectionResponse {
 pub mod numeric {
     pub fn get_sign(number: f64, inverse: bool) -> i8 {
         if inverse {
-            return if number > 0.0 { -1 } else { 1 };
+            if number > 0.0 { -1 } else { 1 }
         } else {
-            return if number > 0.0 { 1 } else { -1 };
+            if number > 0.0 { 1 } else { -1 }
         }
     }
 
@@ -57,7 +57,7 @@ pub mod numeric {
     /// A number corresponding to the linear interpolation
     /// between `a` and `b` at factor `interpFactor`
     pub fn lerp(start: f64, end: f64, interp_factor: f64) -> f64 {
-        return start * (1.0 - interp_factor) + end * interp_factor;
+        start * (1.0 - interp_factor) + end * interp_factor
     }
     /// Limit a number to given bounds
     /// ## Parameters
@@ -259,12 +259,12 @@ pub mod intersections {
         let dist_sqrd = Vec2D::squared_length(dir);
 
         if dist_sqrd < radius * radius {
-            return Some(CollisionResponse {
+            Some(CollisionResponse {
                 dir: Vec2D::normalize(dir, None),
                 pen: radius - f64::sqrt(dist_sqrd)
-            });
+            })
         } else {
-            return None;
+            None
         }
     }
 
@@ -310,7 +310,7 @@ pub mod intersections {
             });
         }
 
-        return None;
+        None
     }
 }
 
@@ -396,7 +396,7 @@ pub mod collisions {
 }
 
 pub mod ease {
-	use super::{super::vectors::Vec2D, consts::*, numeric};
+	use super::{consts::*};
 
 	pub fn linear(t: f64) -> f64 { t }
 

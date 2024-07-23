@@ -33,11 +33,11 @@ impl ObjectPool {
         for cat in &object_cat_elems {
             temp.insert(*cat, HashSet::new());
         }
-        let ret = Self {
+        
+        Self {
             objects: HashMap::new(),
             by_category: temp.clone()
-        };
-        ret
+        }
     }
     pub fn clear(&mut self) {
         self.objects.clear();
