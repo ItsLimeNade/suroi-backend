@@ -1,38 +1,38 @@
 // Thanks to @ersek-huba for remaking this file in Rust for us!
 
 pub struct ColorData {
-    normal: u8,
-    bright: u8
+    pub normal: u8,
+    pub bright: u8
 }
 
 pub struct Colors {
-    black: ColorData,
-    red: ColorData,
-    green: ColorData,
-    yellow: ColorData,
-    blue: ColorData,
-    magenta: ColorData,
-    cyan: ColorData,
-    white: ColorData,
-    r#default: ColorData,
+    pub black: ColorData,
+    pub red: ColorData,
+    pub green: ColorData,
+    pub yellow: ColorData,
+    pub blue: ColorData,
+    pub magenta: ColorData,
+    pub cyan: ColorData,
+    pub white: ColorData,
+    pub r#default: ColorData,
 }
 
 pub struct ColorStyles {
-    foreground: Colors,
-    background: Colors
+    pub foreground: Colors,
+    pub background: Colors
 }
 
 pub struct FontStyles {
-    bold: u8,
-    faint: u8,
-    italic: u8,
-    underline: u8,
-    blinkSlow: u8,
-    blinkFast: u8,
-    invert: u8,
-    conceal: u8,
-    strikethrough: u8,
-    overlined: u8
+    pub bold: u8,
+    pub faint: u8,
+    pub italic: u8,
+    pub underline: u8,
+    pub blinkSlow: u8,
+    pub blinkFast: u8,
+    pub invert: u8,
+    pub conceal: u8,
+    pub strikethrough: u8,
+    pub overlined: u8
 }
 
 pub const color_styles: ColorStyles = ColorStyles {
