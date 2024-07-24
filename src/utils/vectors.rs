@@ -117,10 +117,6 @@ impl Vec2D {
     pub fn lerp(self, end: Vec2D, interp_factor: f64) -> Self {
         self * (1.0 - interp_factor) + end * interp_factor
     }
-    
-    pub fn dot_product(self, other: Vec2D) -> f64 {
-        self.x * other.x + self.y * other.y
-    }
 
     pub fn project(self, vec2: Vec2D) -> Self {
         vec2 * (self * vec2 / vec2.squared_length())
