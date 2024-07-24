@@ -29,7 +29,7 @@ pub mod numeric {
     }
 
     /// Adds two orientations and returns the sum modulo 4
-	/// ## Parameters
+    /// ## Parameters
     /// - `n1`: The first orientation
     /// - `n2`: The second orientation
     pub fn add_orientations(n1: f64, n2: f64) -> f64 {
@@ -347,6 +347,17 @@ pub mod collisions {
         use super::CollisionRecord;
         use super::Vec2D;
 
+        /// Determines the distance between two circles.
+        ///
+        /// ## Parameters
+        /// - `center_a`: The center of the first circle
+        /// - `radius_a`: The radius of the first circle
+        /// - `center_b`: The center of the second circle
+        /// - `radius_b`: The radius of the second circle
+        ///
+        /// ## Returns
+        /// An object containing a boolean indicating whether the two circles are colliding
+        /// and a number indicating the distance between them
         pub fn circles(center_a: Vec2D, radius_a: f64, center_b: Vec2D, radius_b: f64) -> CollisionRecord {
             let rad_sum = radius_a + radius_b;
             let rad_sqrd = rad_sum * rad_sum;
@@ -360,6 +371,17 @@ pub mod collisions {
             }
         }
 
+        /// Determines the distance between a circle and a rectangle.
+        ///
+        /// ## Parameters
+        /// - `min`: The minimum position of the rectangle
+        /// - `max`: The maximum position of the rectangle
+        /// - `position`: The center of the circle
+        /// - `radius`: The radius of the circle
+        ///
+        /// ## Returns
+        /// An object containing a boolean indicating whether the two shapes are colliding
+        /// and a number indicating the distance between them
         pub fn circle_rect(min: Vec2D, max: Vec2D, position: Vec2D, radius: f64) -> CollisionRecord {
             let dist_x = (min.x.max(max.x.min(position.x)) - position.x).abs();
             let dist_y = (min.y.max(max.y.min(position.y)) - position.y).abs();
@@ -370,6 +392,31 @@ pub mod collisions {
                 collided: dist_squared < rad_squared,
                 distance: dist_squared - rad_squared,
             }
+        }
+
+        /// Determines the distance between two rectangles.
+        ///
+        /// ## Parameters
+        /// - `min0`: The minimum position of the first rectangle
+        /// - `max0`: The maximum position of the first rectangle
+        /// - `min1`: The minimum position of the second rectangle
+        /// - `max1`: The maximum position of the second rectangle
+        ///
+        /// ## Returns
+        /// An object containing a boolean indicating whether the two circles are colliding
+        /// and a number indicating the distance between them
+        pub fn rects(min0: Vec2D, max0: Vec2D, min1: Vec2D, max1: Vec2D) -> CollisionRecord {
+            let dist_x = min0.x.max(max0.x.min(min1.x.min(max1.x))) - min0.x.min(max0.x.max(min1.x.max(max1.x)));
+            let dist_y = min0.y.max(max0.y.min(min1.y.min(max1.y))) - min0.y.min(max0.y.max(min1.y.max(max1.y)));
+
+            // If distX or distY is negative, the rectangles are overlapping in that dimension, and the distance is 0
+            if dist_x < 0.0 || dist_y < 0.0 {
+                return CollisionRecord { collided: true, distance: 0.0_f64 };
+            }
+
+            // Calculate the squared distance between the rectangles
+            let dist_squared = dist_x * dist_x + dist_y * dist_y;
+            CollisionRecord { collided: false, distance: dist_squared }
         }
     }
 
@@ -424,81 +471,81 @@ pub mod collisions {
 }
 
 pub mod ease {
-	use super::{consts::*};
+    use super::{consts::*};
 
-	pub fn linear(t: f64) -> f64 { t }
+    pub fn linear(t: f64) -> f64 { t }
 
-	pub fn sine_in(t: f64) -> f64 { 1.0 - (HALF_PI * t).cos() }
-	pub fn sine_out(t: f64) -> f64 { (HALF_PI * t).sin() }
-	pub fn sine_in_out(t: f64) -> f64 { 0.5 * (1.0 - (PI * t).cos()) }
+    pub fn sine_in(t: f64) -> f64 { 1.0 - (HALF_PI * t).cos() }
+    pub fn sine_out(t: f64) -> f64 { (HALF_PI * t).sin() }
+    pub fn sine_in_out(t: f64) -> f64 { 0.5 * (1.0 - (PI * t).cos()) }
 
-	pub fn circ_in(t: f64) -> f64 { 1.0 - (1.0 - (t * t)).sqrt() }
-	pub fn circ_out(t: f64) -> f64 { (1.0 - (t - 1.0).powf(2.0)).sqrt() }
-	pub fn circ_in_out(t: f64) -> f64 {
-		if t < 0.5 {
-			0.5 * (1.0 - (1.0 - (2.0 * t).powf(2.0)).sqrt())
-		} else {
-			0.5 * ((1.0 - (-2.0 * (1.0 - t)).powf(2.0)).sqrt() + 1.0)
-		}
-	}
+    pub fn circ_in(t: f64) -> f64 { 1.0 - (1.0 - (t * t)).sqrt() }
+    pub fn circ_out(t: f64) -> f64 { (1.0 - (t - 1.0).powi(2)).sqrt() }
+    pub fn circ_in_out(t: f64) -> f64 {
+        if t < 0.5 {
+            0.5 * (1.0 - (1.0 - (2.0 * t).powi(2)).sqrt())
+        } else {
+            0.5 * ((1.0 - (-2.0 * (1.0 - t)).powi(2)).sqrt() + 1.0)
+        }
+    }
 
-	pub fn elastic_in(t: f64) -> f64 {
-		if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
-			t
-		} else {
-			-(2.0_f64.powf(10.0 * (t - 1.0))) * (PI * ((40.0 * (t - 1.0)) - 3.0) / 6.0).sin()
-		}
-	}
-	pub fn elastic_out(t: f64) -> f64 {
-		if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
-			t
-		} else {
-			(2.0_f64.powf(-10.0 * t)) * (PI * (40.0 * t - 3.0) / 6.0).sin() + 1.0
-		}
-	}
-	pub fn elastic_in_out(t: f64) -> f64 {
-		if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
-			t
-		} else if t < 0.5 {
-			-(2.0_f64.powf(10.0 * (2.0 * t - 1.0) - 1.0)) * (PI * (80.0 * (2.0 * t - 1.0) - 9.0) / 18.0).sin()
-		} else {
-			2.0_f64.powf(-10.0 * (2.0 * t - 1.0) - 1.0) * (PI * (80.0 * (2.0 * t - 1.0) - 9.0) / 18.0).sin() + 1.0
-		}
-	}
-	pub fn elastic_out_2(t: f64) -> f64 { 2.0_f64.powf(-10.0 * t) * ((TAU * (t - 0.75 / 4.0)) / 0.75).sin() + 1.0 }
+    pub fn elastic_in(t: f64) -> f64 {
+        if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
+            t
+        } else {
+            -(2.0_f64.powf(10.0 * (t - 1.0))) * (PI * ((40.0 * (t - 1.0)) - 3.0) / 6.0).sin()
+        }
+    }
+    pub fn elastic_out(t: f64) -> f64 {
+        if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
+            t
+        } else {
+            (2.0_f64.powf(-10.0 * t)) * (PI * (40.0 * t - 3.0) / 6.0).sin() + 1.0
+        }
+    }
+    pub fn elastic_in_out(t: f64) -> f64 {
+        if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
+            t
+        } else if t < 0.5 {
+            -(2.0_f64.powf(10.0 * (2.0 * t - 1.0) - 1.0)) * (PI * (80.0 * (2.0 * t - 1.0) - 9.0) / 18.0).sin()
+        } else {
+            2.0_f64.powf(-10.0 * (2.0 * t - 1.0) - 1.0) * (PI * (80.0 * (2.0 * t - 1.0) - 9.0) / 18.0).sin() + 1.0
+        }
+    }
+    pub fn elastic_out_2(t: f64) -> f64 { 2.0_f64.powf(-10.0 * t) * ((TAU * (t - 0.75 / 4.0)) / 0.75).sin() + 1.0 }
 
-	pub fn expo_in(t: f64) -> f64 {
-		if t <= 0.0 {
-			0.0_f64
-		} else {
-			2.0_f64.powf(-10.0 * (1.0 - t))
-		}
-	}
-	pub fn expo_out(t: f64) -> f64 {
-		if t >= 1.0 {
-			1.0_f64
-		} else {
-			1.0 - 2.0_f64.powf(-10.0 * t)
-		}
-	}
-	pub fn expo_in_out(t: f64) -> f64 {
-		if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
-			t
-		} else if t < 0.5 {
-			2.0_f64.powf(10.0 * (2.0 * t - 1.0) - 1.0)
-		} else {
-			1.0 - 2.0_f64.powf(-10.0 * (2.0 * t - 1.0) - 1.0)
-		}
-	}
+    pub fn expo_in(t: f64) -> f64 {
+        if t <= 0.0 {
+            0.0_f64
+        } else {
+            2.0_f64.powf(-10.0 * (1.0 - t))
+        }
+    }
+    pub fn expo_out(t: f64) -> f64 {
+        if t >= 1.0 {
+            1.0_f64
+        } else {
+            1.0 - 2.0_f64.powf(-10.0 * t)
+        }
+    }
+    pub fn expo_in_out(t: f64) -> f64 {
+        if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
+            t
+        } else if t < 0.5 {
+            2.0_f64.powf(10.0 * (2.0 * t - 1.0) - 1.0)
+        } else {
+            1.0 - 2.0_f64.powf(-10.0 * (2.0 * t - 1.0) - 1.0)
+        }
+    }
 
-	pub fn back_in(t: f64) -> f64 { (3.0_f64.sqrt() * (t - 1.0) + t) * t * t }
-	pub fn back_out(t: f64) -> f64 { ((3.0_f64.sqrt() + 1.0) * t - 1.0) * (t - 1.0).powf(2.0) + 1.0 }
-	pub fn back_in_out(t: f64) -> f64 {
-		if t < 0.5 {
-			4.0 * t * t * (3.6 * t - 1.3)
-		} else {
-			4.0 * (t - 1.0).powf(2.0) * (3.6 * t - 2.3) + 1.0
-		}
-	}
+    pub fn back_in(t: f64) -> f64 { (3.0_f64.sqrt() * (t - 1.0) + t) * t * t }
+    pub fn back_out(t: f64) -> f64 { ((3.0_f64.sqrt() + 1.0) * t - 1.0) * (t - 1.0).powi(2) + 1.0 }
+    pub fn back_in_out(t: f64) -> f64 {
+        if t < 0.5 {
+            4.0 * t * t * (3.6 * t - 1.3)
+        } else {
+            4.0 * (t - 1.0).powi(2) * (3.6 * t - 2.3) + 1.0
+        }
+    }
 
 }
