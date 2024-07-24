@@ -211,6 +211,7 @@ pub mod intersections {
     use super::numeric::{clamp, get_sign};
     use super::{IntersectionResponse, Vec2D};
     use super::CollisionResponse;
+    use crate::utils::math::geometry;
 
     /// Calculate the intersection between two circles
     /// ## Parameters
@@ -268,6 +269,19 @@ pub mod intersections {
         }
     }
 
+    pub fn line_line(start1: Vec2D, end1: Vec2D, start2: Vec2D, end2: Vec2D) -> Option<Vec2D> {
+        let x1 = geometry::signed_tri_area(start1, end1, end2);
+        let x2 = geometry::signed_tri_area(start1, end1, start2);
+        if x1 != 0.0 && x2 != 0.0 && x1 * x2 < 0.0 {
+            let x3 = geometry::signed_tri_area(start2, end2, start1);
+            let x4 = x3 + x2 - x1;
+            if x3 * x4 < 0.0 {
+                return Some(start1 + (end1 - start1) * (x3 / (x3 - x4)));
+            }
+        }
+        None
+    }
+
     /// Determines where a line intersects a circle
     ///
     /// ## Parameters
@@ -313,6 +327,111 @@ pub mod intersections {
         None
     }
 
+    pub fn line_rect(start_point: Vec2D, end_point: Vec2D, min: Vec2D, max: Vec2D) -> Option<IntersectionResponse> {
+        let mut tmin: f64 = 0.0;
+        let mut tmax: f64 = f64::INFINITY;
+        let epsilon = 1e-5;
+        let r = start_point;
+        
+        let mut d = end_point - start_point;
+        let dist = d.length();
+        d = d.normalize(None);
+        
+        let mut abs_dx = d.x.abs();
+        let mut abs_dy = d.y.abs();
+        
+        if abs_dx <= epsilon {
+            d.x = epsilon * 2.0;
+            abs_dx = d.x;
+        }
+        
+        if abs_dy <= epsilon {
+            d.y = epsilon * 2.0;
+            abs_dy = d.y;
+        }
+        
+        if abs_dx > epsilon {
+            let tx1 = (min.x - r.x) / d.x;
+            let tx2 = (max.x - r.x) / d.x;
+            
+            tmin = tmin.max(tx1.min(tx2));
+            tmax = tmax.min(tx1.max(tx2));
+            
+            if tmin > tmax { return None; }
+        }
+        
+        if abs_dy > epsilon {
+            let ty1 = (min.y - r.y) / d.y;
+            let ty2 = (max.y - r.y) / d.y;
+            
+            tmin = tmin.max(ty1.min(ty2));
+            tmax = tmax.min(ty1.max(ty2));
+            
+            if tmin > tmax { return None; }
+        }
+        
+        if tmin > dist { return None; }
+        
+        let p = start_point + d * tmin;
+        let c = min + (max - min) * 0.5;
+        let p0 = p - c;
+        let d0 = (min - max) * 0.5;
+        
+        let x = p0.x / d0.x.abs() * 1.001;
+        let y = p0.y / d0.y.abs() * 1.001;
+        
+        Some(IntersectionResponse {
+            point: p,
+            normal: Vec2D::new(x.floor(), y.floor()).normalize(None)
+        })
+    }
+
+    pub fn line_rect_test(start_point: Vec2D, end_point: Vec2D, min: Vec2D, max: Vec2D) -> bool {
+        let mut tmin: f64 = 0.0;
+        let mut tmax: f64 = f64::INFINITY;
+        let epsilon = 1e-5;
+        let r = start_point;
+        
+        let mut d = end_point - start_point;
+        let dist = d.length();
+        d = d.normalize(None);
+        
+        let mut abs_dx = d.x.abs();
+        let mut abs_dy = d.y.abs();
+        
+        if abs_dx <= epsilon {
+            d.x = epsilon * 2.0;
+            abs_dx = d.x;
+        }
+        
+        if abs_dy <= epsilon {
+            d.y = epsilon * 2.0;
+            abs_dy = d.y;
+        }
+        
+        if abs_dx > epsilon {
+            let tx1 = (min.x - r.x) / d.x;
+            let tx2 = (max.x - r.x) / d.x;
+            
+            tmin = tmin.max(tx1.min(tx2));
+            tmax = tmax.min(tx1.max(tx2));
+            
+            if tmin > tmax { return false; }
+        }
+        
+        if abs_dy > epsilon {
+            let ty1 = (min.y - r.y) / d.y;
+            let ty2 = (max.y - r.y) / d.y;
+            
+            tmin = tmin.max(ty1.min(ty2));
+            tmax = tmax.min(ty1.max(ty2));
+            
+            if tmin > tmax { return false; }
+        }
+        
+        tmin <= dist
+    }
+
     pub fn rects(min0: Vec2D, max0: Vec2D, min1: Vec2D, max1: Vec2D) -> Option<CollisionResponse> {
         let e0 = (max0 - min0) * 0.5;
         let e1 = (max1 - min1) * 0.5;
@@ -336,6 +455,37 @@ pub mod intersections {
             None
         }
     }
+
+    pub fn ray_line(origin: Vec2D, dir: Vec2D, start: Vec2D, end: Vec2D) -> Option<f64> {
+        let segment = end - start;
+        let seg_perp = Vec2D::new(segment.y, -segment.x);
+        let perp_dot_dir = dir.dot_product(seg_perp);
+        
+        if perp_dot_dir.abs() <= 1e-7 { return None; }
+        let d = start - origin;
+        let dist_along_ray = seg_perp.dot_product(d) / perp_dot_dir;
+        let dist_along_line = Vec2D::new(dir.y, -dir.x).dot_product(d) / perp_dot_dir;
+        
+        if dist_along_ray >= 0.0 && dist_along_line >= 0.0 && dist_along_line <= 1.0 {
+            Some(dist_along_ray)
+        } else { None }
+    }
+
+    pub fn ray_polygon(origin: Vec2D, dir: Vec2D, polygon: &[Vec2D]) -> Option<f64> {
+        let mut t = f64::INFINITY;
+        let mut intersection = false;
+        let len = polygon.len();
+        let mut j = len - 1;
+        for i in 0..len {
+            let dist = self::ray_line(origin, dir, polygon[j], polygon[i]);
+            if !dist.is_none() && dist.unwrap() < t {
+                intersection = true;
+                t = dist.unwrap();
+            }
+            j = i;
+        }
+        if intersection { Some(t) } else { None }
+    }
 }
 
 pub mod collisions {
@@ -346,7 +496,19 @@ pub mod collisions {
     pub mod distances {
         use super::CollisionRecord;
         use super::Vec2D;
-
+        use crate::utils::math::numeric;
+        
+        /// Determines the distance between two circles.
+        ///
+        /// ## Parameters
+        /// - `center_a`: The center of the first circle
+        /// - `radius_a`: The radius of the first circle
+        /// - `center_b`: The center of the second circle
+        /// - `radius_b`: The radius of the second circle
+        ///
+        /// ## Returns
+        /// An object containing a boolean indicating whether the two circles are colliding
+        /// and a number indicating the distance between them
         pub fn circles(center_a: Vec2D, radius_a: f64, center_b: Vec2D, radius_b: f64) -> CollisionRecord {
             let rad_sum = radius_a + radius_b;
             let rad_sqrd = rad_sum * rad_sum;
@@ -360,6 +522,17 @@ pub mod collisions {
             }
         }
 
+        /// Determines the distance between a circle and a rectangle.
+        ///
+        /// ## Parameters
+        /// - `min`: The minimum position of the rectangle
+        /// - `max`: The maximum position of the rectangle
+        /// - `position`: The center of the circle
+        /// - `radius`: The radius of the circle
+        ///
+        /// ## Returns
+        /// An object containing a boolean indicating whether the two shapes are colliding
+        /// and a number indicating the distance between them
         pub fn circle_rect(min: Vec2D, max: Vec2D, position: Vec2D, radius: f64) -> CollisionRecord {
             let dist_x = (min.x.max(max.x.min(position.x)) - position.x).abs();
             let dist_y = (min.y.max(max.y.min(position.y)) - position.y).abs();
@@ -370,6 +543,38 @@ pub mod collisions {
                 collided: dist_squared < rad_squared,
                 distance: dist_squared - rad_squared,
             }
+        }
+
+        /// Determines the distance between two rectangles.
+        ///
+        /// ## Parameters
+        /// - `min0`: The minimum position of the first rectangle
+        /// - `max0`: The maximum position of the first rectangle
+        /// - `min1`: The minimum position of the second rectangle
+        /// - `max1`: The maximum position of the second rectangle
+        ///
+        /// ## Returns
+        /// An object containing a boolean indicating whether the two circles are colliding
+        /// and a number indicating the distance between them
+        pub fn rects(min1: Vec2D, max1: Vec2D, min2: Vec2D, max2: Vec2D) -> CollisionRecord {
+            let dist_x = min1.x.max(max1.x.min(min2.x).min(max2.x)) - min1.x.min(max1.x.max(min2.x).max(max2.x));
+            let dist_y = min1.y.max(max1.y.min(min2.y).min(max2.y)) - min1.y.min(max1.y.max(min2.y).max(max2.y));
+            if dist_x < 0.0 || dist_y < 0.0 {
+                return CollisionRecord {
+                    collided: true,
+                    distance: 0.0,
+                };
+            }
+            let dist_sq = dist_x * dist_x + dist_y * dist_y;
+            CollisionRecord {
+                collided: false,
+                distance: dist_sq,
+            }
+        }
+    
+        pub fn to_line(p: Vec2D, start: Vec2D, end: Vec2D) -> f64 {
+            let segment = end - start;
+            ((start + segment * numeric::clamp((p - start).dot_product(segment) / segment.dot_product(segment), 0.0, 1.0)) - p).squared_length()
         }
     }
 
@@ -417,6 +622,16 @@ pub mod collisions {
             || (pos.x >= min.x && pos.x <= max.x && pos.y >= min.y && pos.y <= max.y)
     }
 
+    /// Check for collision between two rectangles.
+    ///
+    /// ## Parameters
+    /// - `min_a`: The first rectangle minimum position
+    /// - `max_a`: The first rectangle maximum position
+    /// - `min_b`: The second rectangle minimum position
+    /// - `max_b`: The second rectangle maximum position
+    ///
+    /// ## Returns
+    /// Returns `true` if the rectangles collide, `false` otherwise.
     pub fn check_rects(min_a: Vec2D, max_a: Vec2D, min_b: Vec2D, max_b: Vec2D) -> bool {
         min_b.x < max_a.x && min_b.y < max_a.y && min_a.x < max_b.x && min_a.y < max_b.y
     }
@@ -424,81 +639,102 @@ pub mod collisions {
 }
 
 pub mod ease {
-	use super::{consts::*};
+    use super::{consts::*};
 
-	pub fn linear(t: f64) -> f64 { t }
+    pub fn linear(t: f64) -> f64 { t }
 
-	pub fn sine_in(t: f64) -> f64 { 1.0 - (HALF_PI * t).cos() }
-	pub fn sine_out(t: f64) -> f64 { (HALF_PI * t).sin() }
-	pub fn sine_in_out(t: f64) -> f64 { 0.5 * (1.0 - (PI * t).cos()) }
+    pub fn sine_in(t: f64) -> f64 { 1.0 - (HALF_PI * t).cos() }
+    pub fn sine_out(t: f64) -> f64 { (HALF_PI * t).sin() }
+    pub fn sine_in_out(t: f64) -> f64 { 0.5 * (1.0 - (PI * t).cos()) }
 
-	pub fn circ_in(t: f64) -> f64 { 1.0 - (1.0 - (t * t)).sqrt() }
-	pub fn circ_out(t: f64) -> f64 { (1.0 - (t - 1.0).powf(2.0)).sqrt() }
-	pub fn circ_in_out(t: f64) -> f64 {
-		if t < 0.5 {
-			0.5 * (1.0 - (1.0 - (2.0 * t).powf(2.0)).sqrt())
-		} else {
-			0.5 * ((1.0 - (-2.0 * (1.0 - t)).powf(2.0)).sqrt() + 1.0)
-		}
-	}
+    pub fn circ_in(t: f64) -> f64 { 1.0 - (1.0 - (t * t)).sqrt() }
+    pub fn circ_out(t: f64) -> f64 { (1.0 - (t - 1.0).powf(2.0)).sqrt() }
+    pub fn circ_in_out(t: f64) -> f64 {
+        if t < 0.5 {
+            0.5 * (1.0 - (1.0 - (2.0 * t).powf(2.0)).sqrt())
+        } else {
+            0.5 * ((1.0 - (-2.0 * (1.0 - t)).powf(2.0)).sqrt() + 1.0)
+        }
+    }
 
-	pub fn elastic_in(t: f64) -> f64 {
-		if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
-			t
-		} else {
-			-(2.0_f64.powf(10.0 * (t - 1.0))) * (PI * ((40.0 * (t - 1.0)) - 3.0) / 6.0).sin()
-		}
-	}
-	pub fn elastic_out(t: f64) -> f64 {
-		if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
-			t
-		} else {
-			(2.0_f64.powf(-10.0 * t)) * (PI * (40.0 * t - 3.0) / 6.0).sin() + 1.0
-		}
-	}
-	pub fn elastic_in_out(t: f64) -> f64 {
-		if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
-			t
-		} else if t < 0.5 {
-			-(2.0_f64.powf(10.0 * (2.0 * t - 1.0) - 1.0)) * (PI * (80.0 * (2.0 * t - 1.0) - 9.0) / 18.0).sin()
-		} else {
-			2.0_f64.powf(-10.0 * (2.0 * t - 1.0) - 1.0) * (PI * (80.0 * (2.0 * t - 1.0) - 9.0) / 18.0).sin() + 1.0
-		}
-	}
-	pub fn elastic_out_2(t: f64) -> f64 { 2.0_f64.powf(-10.0 * t) * ((TAU * (t - 0.75 / 4.0)) / 0.75).sin() + 1.0 }
+    pub fn elastic_in(t: f64) -> f64 {
+        if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
+            t
+        } else {
+            -(2.0_f64.powf(10.0 * (t - 1.0))) * (PI * ((40.0 * (t - 1.0)) - 3.0) / 6.0).sin()
+        }
+    }
+    pub fn elastic_out(t: f64) -> f64 {
+        if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
+            t
+        } else {
+            (2.0_f64.powf(-10.0 * t)) * (PI * (40.0 * t - 3.0) / 6.0).sin() + 1.0
+        }
+    }
+    pub fn elastic_in_out(t: f64) -> f64 {
+        if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
+            t
+        } else if t < 0.5 {
+            -(2.0_f64.powf(10.0 * (2.0 * t - 1.0) - 1.0)) * (PI * (80.0 * (2.0 * t - 1.0) - 9.0) / 18.0).sin()
+        } else {
+            2.0_f64.powf(-10.0 * (2.0 * t - 1.0) - 1.0) * (PI * (80.0 * (2.0 * t - 1.0) - 9.0) / 18.0).sin() + 1.0
+        }
+    }
+    pub fn elastic_out_2(t: f64) -> f64 { 2.0_f64.powf(-10.0 * t) * ((TAU * (t - 0.75 / 4.0)) / 0.75).sin() + 1.0 }
 
-	pub fn expo_in(t: f64) -> f64 {
-		if t <= 0.0 {
-			0.0_f64
-		} else {
-			2.0_f64.powf(-10.0 * (1.0 - t))
-		}
-	}
-	pub fn expo_out(t: f64) -> f64 {
-		if t >= 1.0 {
-			1.0_f64
-		} else {
-			1.0 - 2.0_f64.powf(-10.0 * t)
-		}
-	}
-	pub fn expo_in_out(t: f64) -> f64 {
-		if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
-			t
-		} else if t < 0.5 {
-			2.0_f64.powf(10.0 * (2.0 * t - 1.0) - 1.0)
-		} else {
-			1.0 - 2.0_f64.powf(-10.0 * (2.0 * t - 1.0) - 1.0)
-		}
-	}
+    pub fn quadratic_in(t: f64) -> f64 { t.powf(2.0) }
+    pub fn quadratic_out(t: f64) -> f64 { 1.0 - (1.0 - t).powf(2.0) }
+    pub fn quadratic_in_out(t: f64) -> f64 { if t <= 0.5 { 2.0 * t.powf(2.0) } else { 1.0 - (2.0 * (1.0 - t).powf(2.0)) } }
+        
+    pub fn cubic_in(t: f64) -> f64 { t.powf(3.0) }
+    pub fn cubic_out(t: f64) -> f64 { 1.0 - (1.0 - t).powf(3.0) }
+    pub fn cubic_in_out(t: f64) -> f64 { if t <= 0.5 { 4.0 * t.powf(3.0) } else { 1.0 - (4.0 * (1.0 - t).powf(3.0)) } }
+        
+    pub fn quartic_in(t: f64) -> f64 { t.powf(4.0) }
+    pub fn quartic_out(t: f64) -> f64 { 1.0 - (1.0 - t).powf(4.0) }
+    pub fn quartic_in_out(t: f64) -> f64 { if t <= 0.5 { 8.0 * t.powf(4.0) } else { 1.0 - (8.0 * (1.0 - t).powf(4.0)) } }
+        
+    pub fn quintic_in(t: f64) -> f64 { t.powf(5.0) }
+    pub fn quintic_out(t: f64) -> f64 { 1.0 - (1.0 - t).powf(5.0) }
+    pub fn quintic_in_out(t: f64) -> f64 { if t <= 0.5 { 16.0 * t.powf(5.0) } else { 1.0 - (16.0 * (1.0 - t).powf(5.0)) } }
+        
+    pub fn sextic_in(t: f64) -> f64 { t.powf(6.0) }
+    pub fn sextic_out(t: f64) -> f64 { 1.0 - (1.0 - t).powf(6.0) }
+    pub fn sextic_in_out(t: f64) -> f64 { if t <= 0.5 { 32.0 * t.powf(6.0) } else { 1.0 - (32.0 * (1.0 - t).powf(6.0)) } }
 
-	pub fn back_in(t: f64) -> f64 { (3.0_f64.sqrt() * (t - 1.0) + t) * t * t }
-	pub fn back_out(t: f64) -> f64 { ((3.0_f64.sqrt() + 1.0) * t - 1.0) * (t - 1.0).powf(2.0) + 1.0 }
-	pub fn back_in_out(t: f64) -> f64 {
-		if t < 0.5 {
-			4.0 * t * t * (3.6 * t - 1.3)
-		} else {
-			4.0 * (t - 1.0).powf(2.0) * (3.6 * t - 2.3) + 1.0
-		}
-	}
+
+    pub fn expo_in(t: f64) -> f64 {
+        if t <= 0.0 {
+            0.0_f64
+        } else {
+            2.0_f64.powf(-10.0 * (1.0 - t))
+        }
+    }
+    pub fn expo_out(t: f64) -> f64 {
+        if t >= 1.0 {
+            1.0_f64
+        } else {
+            1.0 - 2.0_f64.powf(-10.0 * t)
+        }
+    }
+    pub fn expo_in_out(t: f64) -> f64 {
+        if 1.0_f64.to_bits() == t.to_bits() || 0.0_f64.to_bits() == t.to_bits() {
+            t
+        } else if t < 0.5 {
+            2.0_f64.powf(10.0 * (2.0 * t - 1.0) - 1.0)
+        } else {
+            1.0 - 2.0_f64.powf(-10.0 * (2.0 * t - 1.0) - 1.0)
+        }
+    }
+
+    pub fn back_in(t: f64) -> f64 { (3.0_f64.sqrt() * (t - 1.0) + t) * t * t }
+    pub fn back_out(t: f64) -> f64 { ((3.0_f64.sqrt() + 1.0) * t - 1.0) * (t - 1.0).powf(2.0) + 1.0 }
+    pub fn back_in_out(t: f64) -> f64 {
+        if t < 0.5 {
+            4.0 * t * t * (3.6 * t - 1.3)
+        } else {
+            4.0 * (t - 1.0).powf(2.0) * (3.6 * t - 2.3) + 1.0
+        }
+    }
 
 }
