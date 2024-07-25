@@ -1,7 +1,7 @@
 use crate::constants::ObjectCategory;
 use std::collections::{HashMap, HashSet};
 
-static object_cat_elems: [ObjectCategory; 9] = [
+static OBJECT_CAT_ELEMS: [ObjectCategory; 9] = [
     ObjectCategory::Player,
     ObjectCategory::Obstacle,
     ObjectCategory::DeathMarker,
@@ -30,10 +30,10 @@ impl ObjectPool {
     }
     pub fn new() -> Self {
         let mut temp: HashMap<ObjectCategory, HashSet<GameObject>> = HashMap::new();
-        for cat in &object_cat_elems {
+        for cat in &OBJECT_CAT_ELEMS {
             temp.insert(*cat, HashSet::new());
         }
-        
+
         Self {
             objects: HashMap::new(),
             by_category: temp.clone()
