@@ -518,7 +518,10 @@ pub mod intersections {
         let mut j = len - 1;
         for i in 0..len {
             match self::ray_line(origin, dir, polygon[j], polygon[i]) {
-                Some(d) if d < t => t = d,
+                Some(d) if d < t => {
+                    t = d;
+                    intersection = true;
+                },
                 _ => ()
             }
             j = i;

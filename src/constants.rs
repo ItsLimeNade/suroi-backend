@@ -1,5 +1,6 @@
 use crate::typings::{AirdropGameConstants, GameConstants, PlayerGameConstants};
-use strum_macros::EnumCount;
+use strum::IntoEnumIterator;
+use strum_macros::{EnumCount, EnumIter};
 
 pub enum TeamSize {
     Solo = 1,
@@ -8,7 +9,7 @@ pub enum TeamSize {
     Squad = 4,
 }
 
-#[derive(Hash, Eq, PartialEq, Copy, Clone, EnumCount)]
+#[derive(Hash, Eq, PartialEq, Copy, Clone, EnumCount, EnumIter)]
 pub enum ObjectCategory {
     Player,
     Obstacle,
