@@ -2,7 +2,7 @@ use super::math::{
     collisions, collisions::distances, geometry, intersections, CollisionRecord,
     IntersectionResponse,
 };
-use super::random::random_point_in_circle;
+use super::random::{random_point_in_circle, random_float};
 use super::vectors::Vec2D;
 use crate::typings::Orientation;
 
@@ -229,39 +229,78 @@ impl Collidable for RectangleHitbox {
     }
 
     fn distance_to(&self, other: &Hitbox) -> Option<CollisionRecord> {
-        todo!()
+        match other {
+            Hitbox::Circle(other) => {
+                Some(distances::circle_rect(self.min, self.max, other.position, other.radius))
+            },
+            Hitbox::Rect(other) => {
+                Some(distances::rects(other.min, other.max, self.min, self.max))
+            }
+            _ => {
+                RectangleHitbox::panic_unknown_subclass(other);
+                None
+            }
+        }
     }
 
     fn transform(&self, pos: Vec2D, scale: Option<f64>, orientation: Option<Orientation>) -> Self {
-        todo!()
+        let mut smol_rect = geometry::Rectangle {
+            min: self.min,
+            max: self.max
+        };
+        let rect = geometry::Rectangle::transform(&mut smol_rect, pos, scale.unwrap_or(1.0), orientation.unwrap_or(Orientation::Up));
+        RectangleHitbox {
+            min: rect.min,
+            max: rect.max
+        }
     }
 
     fn scale(&mut self, scale: f64) {
-        todo!()
+        let center_x = (self.min.x + self.max.x) / 2.0_f64;
+        let center_y = (self.min.y + self.max.y) / 2.0_f64;
+
+        self.min = Vec2D {
+            x: (self.min.x - center_x) * scale + center_x,
+            y: (self.min.y - center_y) * scale + center_y
+        };
+
+        self.max = Vec2D {
+            x: (self.max.x - center_x) * scale + center_x,
+            y: (self.max.y - center_y) * scale + center_y
+        };
     }
 
     fn intersects_line(&self, a: Vec2D, b: Vec2D) -> Option<IntersectionResponse> {
-        todo!()
+        intersections::line_rect(a, b, self.min, self.max)
     }
 
     fn random_point(&self) -> Vec2D {
-        todo!()
+        Vec2D {
+            x: random_float(self.min.x, self.max.x),
+            y: random_float(self.min.y, self.max.y)
+        }
     }
 
     fn as_rectangle(&self) -> RectangleHitbox {
-        todo!()
+        self.clone()
     }
 
     fn is_vec_inside(&self, vec: Vec2D) -> bool {
-        todo!()
+        vec.x > self.min.x && vec.y > self.min.y && vec.x < self.max.x && vec.y < self.max.y
     }
 
     fn get_center(&self) -> Vec2D {
-        todo!()
+        Vec2D {
+            x: self.min.x + ((self.max.x - self.min.x) / 2.0_f64),
+            y: self.min.y + ((self.max.y - self.min.y) / 2.0_f64 )
+        }
     }
 
     fn panic_unknown_subclass(other: &Hitbox) {
-        todo!()
+        panic!(
+            "Hitbox type RectangleHitbox doesn't support this operation with hitbox type {:#?}",
+            other
+        );
     }
 }
 
