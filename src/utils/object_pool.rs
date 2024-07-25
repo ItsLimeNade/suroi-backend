@@ -1,17 +1,6 @@
 use crate::constants::ObjectCategory;
 use std::collections::{HashMap, HashSet};
-
-static OBJECT_CAT_ELEMS: [ObjectCategory; 9] = [
-    ObjectCategory::Player,
-    ObjectCategory::Obstacle,
-    ObjectCategory::DeathMarker,
-    ObjectCategory::Loot,
-    ObjectCategory::Building,
-    ObjectCategory::Decal,
-    ObjectCategory::Parachute,
-    ObjectCategory::ThrowableProjectile,
-    ObjectCategory::SyncedParticle
-];
+use strum::IntoEnumIterator;
 
 #[derive(Hash, Eq, PartialEq, Copy, Clone)]
 struct GameObject {
@@ -30,8 +19,8 @@ impl ObjectPool {
     }
     pub fn new() -> Self {
         let mut temp: HashMap<ObjectCategory, HashSet<GameObject>> = HashMap::new();
-        for cat in &OBJECT_CAT_ELEMS {
-            temp.insert(*cat, HashSet::new());
+        for cat in ObjectCategory::iter() {
+            temp.insert(cat, HashSet::new());
         }
 
         Self {
