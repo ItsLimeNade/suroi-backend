@@ -1,4 +1,5 @@
 use crate::typings::{AirdropGameConstants, GameConstants, PlayerGameConstants};
+use strum_macros::EnumCount;
 
 pub enum TeamSize {
 	Solo = 1,
@@ -7,7 +8,7 @@ pub enum TeamSize {
 	Squad = 4,
 }
 
-#[derive(Hash, Eq, PartialEq, Copy, Clone)] // we need all of those for the object pool
+#[derive(Hash, Eq, PartialEq, Copy, Clone, EnumCount)]
 pub enum ObjectCategory {
 	Player,
 	Obstacle,
@@ -52,6 +53,7 @@ pub enum FireMode {
 	Auto
 }
 
+#[derive(Hash, Eq, PartialEq, Copy, Clone, EnumCount)]
 pub enum InputActions {
 	EquipItem,
 	EquipLastItem,
@@ -70,6 +72,7 @@ pub enum InputActions {
 	Loot
 }
 
+#[derive(Hash, Eq, PartialEq, Copy, Clone, EnumCount)]
 pub enum SpectateActions {
 	BeginSpectating,
 	SpectatePrevious,
@@ -79,6 +82,7 @@ pub enum SpectateActions {
 	Report
 }
 
+#[derive(Hash, Eq, PartialEq, Copy, Clone, EnumCount)]
 pub enum PlayerActions {
 	None,
 	Reload,

@@ -3,3 +3,7 @@ pub mod random;
 pub mod vectors;
 pub mod hitbox;
 pub mod object_pool;
+pub mod bitstream;
+pub mod suroi_bitstream;
+pub mod decimal;
+pub mod string_utils;
