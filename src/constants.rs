@@ -1,5 +1,4 @@
 use crate::typings::{AirdropGameConstants, GameConstants, PlayerGameConstants};
-use strum::IntoEnumIterator;
 use strum_macros::{EnumCount, EnumIter};
 
 pub enum TeamSize {

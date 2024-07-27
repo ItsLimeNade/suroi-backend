@@ -1,11 +1,10 @@
 use std::f64::consts::PI;
 
-use crate::constants::{ObjectCategory, GAME_CONSTANTS};
+use crate::constants::GAME_CONSTANTS;
 
 use super::bitstream::{BitStream, Endianness, Stream};
 use super::vectors::Vec2D;
 
-use strum::EnumCount;
 
 // FIXME
 // pub const OBJECT_CATEGORY_BITS: usize = (ObjectCategory::COUNT as f64).log2().ceil() as usize;

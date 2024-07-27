@@ -161,7 +161,7 @@ pub trait Stream {
     fn write_uint128<T: Into<u128>>(&mut self, value: T) {
         let into = Into::<u128>::into(value);
         // needless operations added for padding & visual clarity
-        self.write_bits_us(((into >> 0x00) & 0xFFFFFFFF) as u32, 32);
+        self.write_bits_us((into & 0xFFFFFFFF) as u32, 32);
         self.write_bits_us(((into >> 0x20) & 0xFFFFFFFF) as u32, 32);
         self.write_bits_us(((into >> 0x40) & 0xFFFFFFFF) as u32, 32);
         self.write_bits_us(((into >> 0x60) & 0xFFFFFFFF) as u32, 32);
@@ -169,7 +169,7 @@ pub trait Stream {
 
     fn read_uint128(&mut self) -> u128 {
         // needless operations added for padding & visual clarity
-        0x0 + ((self.read_bits(32) as u128) << 0x00)
+        (self.read_bits(32) as u128)
             + ((self.read_bits(32) as u128) << 0x20)
             + ((self.read_bits(32) as u128) << 0x40)
             + ((self.read_bits(32) as u128) << 0x60)
