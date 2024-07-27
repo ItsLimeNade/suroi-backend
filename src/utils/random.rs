@@ -71,3 +71,7 @@ pub fn random_point_in_circle(pos: Vec2D, min_radius: Option<f64>, max_radius: f
         y: pos.y + f64::sin(angle) * length
     }
 }
+
+pub fn random_item<'a, T>(items: &'a [T]) -> &'a T {
+    &items[random_int(0, items.len() as i64) as usize]
+}

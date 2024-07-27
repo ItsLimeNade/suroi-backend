@@ -4,16 +4,19 @@ pub mod consts {
     pub use std::f64::consts::{FRAC_PI_2 as HALF_PI, PI, TAU};
 }
 
+#[derive(Clone, Copy)]
 pub struct CollisionRecord {
     pub collided: bool,
     pub distance: f64,
 }
 
+#[derive(Clone, Copy)]
 pub struct CollisionResponse {
     pub dir: Vec2D,
     pub pen: f64,
 }
 
+#[derive(Clone, Copy)]
 pub struct IntersectionResponse {
     pub point: Vec2D,
     pub normal: Vec2D,
