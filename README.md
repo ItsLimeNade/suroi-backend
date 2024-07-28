@@ -1,2 +1,2 @@
 # suroi-backend
-Suroi's rewritten backend in Rust
+Suroi's backend rewritten in Rust
