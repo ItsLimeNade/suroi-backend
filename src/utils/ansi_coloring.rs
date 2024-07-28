@@ -35,7 +35,7 @@ pub struct FontStyles {
     pub overlined: u8
 }
 
-pub const color_styles: ColorStyles = ColorStyles {
+pub const COLOR_STYLES: ColorStyles = ColorStyles {
     foreground: Colors {
         black: ColorData { normal: 30, bright: 90 },
         red: ColorData { normal: 31, bright: 91 },
@@ -60,7 +60,7 @@ pub const color_styles: ColorStyles = ColorStyles {
     }
 };
 
-pub const font_styles: FontStyles = FontStyles {
+pub const FONT_STYLES: FontStyles = FontStyles {
     bold: 1,
     faint: 2,
     italic: 3,
@@ -75,8 +75,24 @@ pub const font_styles: FontStyles = FontStyles {
 
 pub const CSI: char = '\u{001b}';
 
+/// Returns ANSI formatted text.
+/// ## Parameters
+/// - `string`: The string to be formatted
+/// - `styles`: The ANSI style escape code(s) to be applied
 //#[vararg]
-pub fn style_text(string: &str, styles: &Vec<u8>) -> String {
+pub fn style_text(string: &str, styles: &[u8]) -> String {
     let str_styles = styles.iter().map(|i| i.to_string() ).collect::<Vec<String>>();
     format!("{}[{}m{}{}[0m", CSI, str_styles.join(";"), string, CSI)
+}
+
+// Constants for the default styles.
+// If these are faulty, don't blame @ersek-huba, he did not create these.
+pub mod consts {
+    use crate::utils::ansi_coloring::COLOR_STYLES;
+
+    /// Constant for the date and time style for logs
+    pub const DATETIME_STYLE: u8 = COLOR_STYLES.foreground.green.bright;
+
+    /// Constant for the `[WARNING]` style in warnings
+    pub const WARN_STYLE: u8 = COLOR_STYLES.foreground.yellow.normal;
 }
