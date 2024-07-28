@@ -705,31 +705,19 @@ pub mod collisions {
 pub mod ease {
     use super::consts::*;
 
-    pub fn linear(t: f64) -> f64 {
-        t
-    }
+    pub fn linear(t: f64) -> f64 { t }
 
-    pub fn sine_in(t: f64) -> f64 {
-        1.0 - (HALF_PI * t).cos()
-    }
-    pub fn sine_out(t: f64) -> f64 {
-        (HALF_PI * t).sin()
-    }
-    pub fn sine_in_out(t: f64) -> f64 {
-        0.5 * (1.0 - (PI * t).cos())
-    }
+    pub fn sine_in(t: f64) -> f64 { 1.0 - (HALF_PI * t).cos() }
+    pub fn sine_out(t: f64) -> f64 { (HALF_PI * t).sin() }
+    pub fn sine_in_out(t: f64) -> f64 { 0.5 * (1.0 - (PI * t).cos()) }
 
-    pub fn circ_in(t: f64) -> f64 {
-        1.0 - (1.0 - (t * t)).sqrt()
-    }
-    pub fn circ_out(t: f64) -> f64 {
-        (1.0 - (t - 1.0).powf(2.0)).sqrt()
-    }
+    pub fn circ_in(t: f64) -> f64 { 1.0 - (1.0 - (t * t)).sqrt() }
+    pub fn circ_out(t: f64) -> f64 { (1.0 - (t - 1.0).powi(2)).sqrt() }
     pub fn circ_in_out(t: f64) -> f64 {
         if t < 0.5 {
-            0.5 * (1.0 - (1.0 - (2.0 * t).powf(2.0)).sqrt())
+            0.5 * (1.0 - (1.0 - (2.0 * t).powi(2)).sqrt())
         } else {
-            0.5 * ((1.0 - (-2.0 * (1.0 - t)).powf(2.0)).sqrt() + 1.0)
+            0.5 * ((1.0 - (-2.0 * (1.0 - t)).powi(2)).sqrt() + 1.0)
         }
     }
 
@@ -763,73 +751,53 @@ pub mod ease {
         2.0_f64.powf(-10.0 * t) * ((TAU * (t - 0.75 / 4.0)) / 0.75).sin() + 1.0
     }
 
-    pub fn quadratic_in(t: f64) -> f64 {
-        t.powf(2.0)
-    }
-    pub fn quadratic_out(t: f64) -> f64 {
-        1.0 - (1.0 - t).powf(2.0)
-    }
+    pub fn quadratic_in(t: f64) -> f64 { t.powi(2) }
+    pub fn quadratic_out(t: f64) -> f64 { 1.0 - (1.0 - t).powi(2) }
     pub fn quadratic_in_out(t: f64) -> f64 {
         if t <= 0.5 {
-            2.0 * t.powf(2.0)
+            2.0 * t.powi(2)
         } else {
-            1.0 - (2.0 * (1.0 - t).powf(2.0))
+            1.0 - (2.0 * (1.0 - t).powi(2))
         }
     }
 
-    pub fn cubic_in(t: f64) -> f64 {
-        t.powf(3.0)
-    }
-    pub fn cubic_out(t: f64) -> f64 {
-        1.0 - (1.0 - t).powf(3.0)
-    }
+    pub fn cubic_in(t: f64) -> f64 { t.powi(3) }
+    pub fn cubic_out(t: f64) -> f64 { 1.0 - (1.0 - t).powi(3) }
     pub fn cubic_in_out(t: f64) -> f64 {
         if t <= 0.5 {
-            4.0 * t.powf(3.0)
+            4.0 * t.powi(3)
         } else {
-            1.0 - (4.0 * (1.0 - t).powf(3.0))
+            1.0 - (4.0 * (1.0 - t).powi(3))
         }
     }
 
-    pub fn quartic_in(t: f64) -> f64 {
-        t.powf(4.0)
-    }
-    pub fn quartic_out(t: f64) -> f64 {
-        1.0 - (1.0 - t).powf(4.0)
-    }
+    pub fn quartic_in(t: f64) -> f64 { t.powi(4) }
+    pub fn quartic_out(t: f64) -> f64 { 1.0 - (1.0 - t).powi(4) }
     pub fn quartic_in_out(t: f64) -> f64 {
         if t <= 0.5 {
-            8.0 * t.powf(4.0)
+            8.0 * t.powi(4)
         } else {
-            1.0 - (8.0 * (1.0 - t).powf(4.0))
+            1.0 - (8.0 * (1.0 - t).powi(4))
         }
     }
 
-    pub fn quintic_in(t: f64) -> f64 {
-        t.powf(5.0)
-    }
-    pub fn quintic_out(t: f64) -> f64 {
-        1.0 - (1.0 - t).powf(5.0)
-    }
+    pub fn quintic_in(t: f64) -> f64 { t.powi(5) }
+    pub fn quintic_out(t: f64) -> f64 { 1.0 - (1.0 - t).powi(5) }
     pub fn quintic_in_out(t: f64) -> f64 {
         if t <= 0.5 {
-            16.0 * t.powf(5.0)
+            16.0 * t.powi(5)
         } else {
-            1.0 - (16.0 * (1.0 - t).powf(5.0))
+            1.0 - (16.0 * (1.0 - t).powi(5))
         }
     }
 
-    pub fn sextic_in(t: f64) -> f64 {
-        t.powf(6.0)
-    }
-    pub fn sextic_out(t: f64) -> f64 {
-        1.0 - (1.0 - t).powf(6.0)
-    }
+    pub fn sextic_in(t: f64) -> f64 { t.powi(6) }
+    pub fn sextic_out(t: f64) -> f64 { 1.0 - (1.0 - t).powi(6) }
     pub fn sextic_in_out(t: f64) -> f64 {
         if t <= 0.5 {
-            32.0 * t.powf(6.0)
+            32.0 * t.powi(6)
         } else {
-            1.0 - (32.0 * (1.0 - t).powf(6.0))
+            1.0 - (32.0 * (1.0 - t).powi(6))
         }
     }
 
@@ -861,13 +829,13 @@ pub mod ease {
         (3.0_f64.sqrt() * (t - 1.0) + t) * t * t
     }
     pub fn back_out(t: f64) -> f64 {
-        ((3.0_f64.sqrt() + 1.0) * t - 1.0) * (t - 1.0).powf(2.0) + 1.0
+        ((3.0_f64.sqrt() + 1.0) * t - 1.0) * (t - 1.0).powi(2) + 1.0
     }
     pub fn back_in_out(t: f64) -> f64 {
         if t < 0.5 {
             4.0 * t * t * (3.6 * t - 1.3)
         } else {
-            4.0 * (t - 1.0).powf(2.0) * (3.6 * t - 2.3) + 1.0
+            4.0 * (t - 1.0).powi(2) * (3.6 * t - 2.3) + 1.0
         }
     }
 }
