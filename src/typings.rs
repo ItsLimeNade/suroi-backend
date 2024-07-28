@@ -127,3 +127,26 @@ pub struct AirdropGameConstants {
     pub fly_time: u16,
     pub damage: u16,
 }
+
+pub struct GameConfig<'a> {
+    pub host: &'a str,
+    pub port: u16, // Port numbers only go to 65535. Right?
+    pub map_name: &'a str,
+    pub tps: u8, // If you want higher than 255 TPS, change this to u16.
+    pub plugins: Vec<&'a str>,
+    // pub spawn: { mode: SpawnMode.Normal },
+    pub max_players_per_game: u8, // If you want more than 255 players per game, change this to u16.
+    pub max_games: u8,
+    pub prevent_join_after: u16, // If you want the value to be >65535, change this to u32.
+    // pub gas: { mode: GasMode.Normal },
+    pub movement_speed: f32,
+    pub censor_usernames: bool,
+    pub max_team_size: u8,
+    // pub roles: Vec<Role>, // NOT IMPLEMENTED
+}
+
+pub struct Role { // NOT IMPLEMENTED
+    name: String,
+    password: String,
+    is_dev: bool,
+}

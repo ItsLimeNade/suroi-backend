@@ -7,3 +7,5 @@ pub mod bitstream;
 pub mod suroi_bitstream;
 pub mod decimal;
 pub mod string_utils;
+pub mod misc;
+pub mod ansi_coloring;

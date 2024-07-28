@@ -2,6 +2,7 @@ mod utils;
 mod tests; // Do not remove
 mod typings; // I have to import it here for it to be accessible in the hitbox.rs file. Fix?
 mod constants;
+mod config; // I likely have to import it here
 
 fn main() {
     let x = vec![1,2,3,4,5,6,7,8,9,10];
