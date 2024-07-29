@@ -1,5 +1,8 @@
 use super::utils::math::consts::*;
+use super::utils::vectors::Vec2D;
+use crate::constants::TeamSize;
 use std::ops::Add;
+use phf::phf_map;
 
 #[derive(Copy, Clone)]
 pub enum Orientation {
@@ -128,25 +131,91 @@ pub struct AirdropGameConstants {
     pub damage: u16,
 }
 
+// config stuff
+
+pub enum SpawnMode {
+    Normal,
+    Radius,
+    Fixed,
+    Center
+}
+
+pub enum GasMode {
+    Normal,
+    Debug,
+    Disabled
+}
+
+pub enum MaxTeamSize<'a> {
+    Constant(TeamSize),
+    Switch {
+        switch_schedule: &'a str,
+        rotation: &'a [TeamSize]
+    }
+}
+
+pub struct SSLOptions<'a> {
+    pub key_file: &'a str,
+    pub cert_file: &'a str
+}
+
+pub struct SpawnSettings {
+    pub mode: SpawnMode,
+    pub position: Option<Vec2D>,
+    pub radius: Option<f64>
+}
+
+pub struct GasSettings {
+    pub mode: GasMode,
+    pub override_position: Option<bool>,
+    pub override_duration: Option<u8>
+}
+
+pub struct MaxJoinAttempts {
+    pub count: u8,
+    pub duration: u16
+}
+
+pub struct Punishments<'a> {
+    pub password: &'a str,
+    pub url: Option<&'a str>
+}
+
+pub struct Protection<'a> {
+    pub max_simultaneous_connections: Option<u8>,
+    pub max_join_attempts: Option<MaxJoinAttempts>,
+    pub punishments: Option<Punishments<'a>>,
+    pub refresh_duration: Option<u16>,
+    pub ip_blocklist_url: Option<&'a str>
+}
+
+pub struct AuthServer<'a> {
+    pub address: &'a str
+}
+
+pub struct Role<'a> {
+    pub password: &'a str,
+    pub is_dev: bool,
+}
+
 pub struct GameConfig<'a> {
     pub host: &'a str,
     pub port: u16, // Port numbers only go to 65535. Right?
+    pub ssl: Option<SSLOptions<'a>>,
     pub map_name: &'a str,
     pub tps: u8, // If you want higher than 255 TPS, change this to u16.
-    pub plugins: Vec<&'a str>,
-    // pub spawn: { mode: SpawnMode.Normal },
+    pub plugins: Vec<&'a str>, // FIXME: change this when Plugins are implemented
+    pub spawn: SpawnSettings,
+    pub max_team_size: MaxTeamSize<'a>,
     pub max_players_per_game: u8, // If you want more than 255 players per game, change this to u16.
     pub max_games: u8,
     pub prevent_join_after: u16, // If you want the value to be >65535, change this to u32.
-    // pub gas: { mode: GasMode.Normal },
+    pub gas: GasSettings,
     pub movement_speed: f32,
     pub censor_usernames: bool,
-    pub max_team_size: u8,
-    // pub roles: Vec<Role>, // NOT IMPLEMENTED
-}
-
-pub struct Role { // NOT IMPLEMENTED
-    name: String,
-    password: String,
-    is_dev: bool,
+    pub protection: Option<Protection<'a>>,
+    pub ip_header: Option<&'a str>,
+    pub roles: phf::Map<&'static str, Role<'static>>,
+    pub enable_lobby_clearing: bool,
+    pub auth_server: Option<AuthServer<'a>>
 }
