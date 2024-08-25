@@ -306,55 +306,114 @@ impl Collidable for RectangleHitbox {
 }
 
 #[derive(Debug, Clone)]
-pub struct PolygonHitbox {}
+pub struct PolygonHitbox {
+    points: Vec<Vec2D>,
+    center: Vec2D
+}
 
 impl Collidable for PolygonHitbox {
     fn as_hitbox(&self) -> Hitbox {
-        todo!()
+        Hitbox::Polygon(self.clone())
     }
 
     fn collides_with(&self, other: &Hitbox) -> bool {
-        todo!()
+        match other {
+            Hitbox::Rect(other) => {
+                if self.is_vec_inside(other.min) || self.is_vec_inside(other.max) {
+                    return true;
+                }
+                for (i, a) in self.points.iter().enumerate() {
+                    if other.is_vec_inside(*a) { return true; }
+                    let j = (i + 1) % self.points.len();
+                    let b = self.points[j as usize];
+                    if intersections::line_rect_test(b, *a, other.min, other.max) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            _ => {
+                Self::panic_unknown_subclass(other);
+                return false;
+            }
+        }
     }
 
     fn resolve_collision(&mut self, other: &mut Hitbox) {
-        todo!()
+        Self::panic_unknown_subclass(other);
     }
 
     fn distance_to(&self, other: &Hitbox) -> Option<CollisionRecord> {
-        todo!()
+        Self::panic_unknown_subclass(other);
+        None
     }
 
     fn transform(&self, pos: Vec2D, scale: Option<f64>, orientation: Option<Orientation>) -> Self {
-        todo!()
+        PolygonHitbox {
+            points: self.points.iter().map(|point| pos.add_adjust(*point, orientation.unwrap_or(Orientation::Up)) * scale.unwrap_or(1.0)).collect(),
+            center: self.center
+        }
     }
 
     fn scale(&mut self, scale: f64) {
-        todo!()
+        for point in self.points.iter_mut() {
+            *point = *point * scale;
+        }
     }
 
     fn intersects_line(&self, a: Vec2D, b: Vec2D) -> Option<IntersectionResponse> {
-        todo!()
+        panic!("Operation not supported");
     }
 
     fn random_point(&self) -> Vec2D {
-        todo!()
+        let rect = self.as_rectangle();
+        let mut point: Vec2D;
+        loop {
+            point = rect.random_point();
+            if self.is_vec_inside(point) { break; }
+        }
+        point
     }
 
     fn as_rectangle(&self) -> RectangleHitbox {
-        todo!()
+        let mut min = Vec2D::new(f64::INFINITY, f64::INFINITY);
+        let mut max = Vec2D::new(0.0, 0.0);
+        for point in self.points.iter() {
+            min.x = min.x.min(point.x);
+            min.y = min.y.min(point.y);
+            max.x = max.x.max(point.x);
+            max.y = max.y.max(point.y);
+        }
+        RectangleHitbox {
+            min,
+            max
+        }
     }
 
     fn is_vec_inside(&self, vec: Vec2D) -> bool {
-        todo!()
+        let mut inside = false;
+        let count = self.points.len();
+        let mut j = count - 1;
+        for i in 0..count {
+            let pi = self.points[i as usize];
+            let pj = self.points[j as usize];
+            if (pi.y > vec.y) != (pj.y > vec.y) && vec.x < (pj.x - pi.x) * (vec.y - pi.y) / (pj.y - pi.y) + pi.x {
+                inside = !inside;
+            }
+            j = i;
+        }
+        inside
     }
 
     fn get_center(&self) -> Vec2D {
-        todo!()
+        self.as_rectangle().get_center()
     }
 
     fn panic_unknown_subclass(other: &Hitbox) {
-        todo!()
+        panic!(
+            "Hitbox type PolygonHitbox doesn't support this operation with hitbox type {:#?}",
+            other
+        );
     }
 }
 
@@ -375,7 +434,7 @@ impl GroupHitbox {
 
 impl Collidable for GroupHitbox {
     fn as_hitbox(&self) -> Hitbox {
-        todo!()
+        Hitbox::Group(self.clone())
     }
     fn collides_with(&self, other: &Hitbox) -> bool {
         self.hitboxes.iter().any(|hitbox| match hitbox {
